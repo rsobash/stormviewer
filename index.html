@@ -307,6 +307,7 @@ for (var mem=1; mem<=10; mem++) {
 		 		.each("start", function() {
 		 				mapbox.select("text").style("visibility", "hidden"); 
 		 				all_circles.style("visibility", "visible");
+		 				d3.selectAll("path.gridbox").style("visibility", "visible");
 		 				histosvg.selectAll("text.label").style("visibility", "visible");
 		 		});
 		 
@@ -317,8 +318,7 @@ for (var mem=1; mem<=10; mem++) {
 		 			.text(num_objects+" objects");
 
 		 d3.select("div#showall").on("click", function() { 
-		 		//all_circles.style("visibility", "visible");
-		 		all_circles.style("visibility", "hidden");
+		 		all_circles.style("visibility", "visible");
 		 		d3.selectAll("path.gridbox").style("visibility", "visible");
 		 		
 		 		textbox.text(num_objects+" objects");

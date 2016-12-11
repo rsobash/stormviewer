@@ -32,7 +32,8 @@ text { font-family: helvetica; font-size: 14px;}
 path.gridbox { 
 	fill: gray;
 	stroke-width: 0px;
-	stroke: none; 
+	stroke: none;
+	visibility: hidden; 
 	opacity: 0.6; 
 }
 
