@@ -1,0 +1,124 @@
+
+.land {
+  fill: #eeeeee;
+  stroke: #000;
+  stroke-width: 0.5px;
+}
+
+.county-boundary {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: .5px;
+}
+
+.state-boundary {
+  fill: none;
+  stroke: #000;
+  stroke-width: 0.5px;
+}
+
+svg { 
+	margin-top: 0px;
+	border: 0px solid #EFEFEF;
+	float: left;
+	opacity: 0.5;
+}
+.histosvg { margin-left: 5px; border: 0px; float:left;}
+circle.circle { stroke-width: 1px; cursor: pointer; visibility: hidden; }
+.hoverdot { fill: red; stroke: black; stroke-width: 1px; cursor: pointer;}
+text { font-family: helvetica; font-size: 14px;}
+.overlay { fill: none; pointer-events: all; }
+
+path.gridbox { 
+	fill: gray;
+	stroke-width: 0px;
+	stroke: none; 
+	opacity: 0.6; 
+}
+
+rect { fill: #EFEFEF; }
+
+body {
+        margin: 0px;
+	padding: 0px;
+	font: normal normal normal 14px helvetica,arial;
+	text-align: center; /** for IE centering **/
+}
+
+div#rolloverdiv {
+    padding: 0px 0px 5px 0px;
+	margin: 5px auto 0px auto;
+	text-align: center;
+	width: 100%;
+	opacity: 0.0;
+}
+div#rolloverdiv-members {
+	clear: both;
+	float: left;
+	width: 65px;
+	padding-top: 60px;
+	opacity: 0.0;
+}
+
+div#rollovercenter {
+	display: inline-block;
+	overflow: hidden;
+        text-align: left;
+}
+
+div.rollover {
+	border-top: 2px solid #EFEFEF;
+	border-bottom: 2px solid #EFEFEF;
+	width: 15px;
+	text-align: center;
+	font-size: 12px;
+	padding: 10px 5px 10px 5px;
+	margin: 0px 0px 0px 0px;
+	float: left;
+	color: #EFEFEF;
+	cursor: default;
+}
+div.rollover.loaded {
+	color: #000;
+}
+div.rollover.member {
+	width: 45px;
+	border-left: 2px solid #EFEFEF;
+	border-right: 2px solid #EFEFEF;
+	border-top: 0px;
+	border-bottom: 0px;
+}
+div.rollover.selected {
+	/** background-color: #fee6ce; **/
+	border-top: 2px solid #000; 
+	border-bottom: 2px solid #000; 
+	font-weight: bold;
+	cursor: pointer;
+}
+div.rollover.selected.member {
+	border-top: 0px;
+	border-bottom: 0px;
+	border-left: 2px solid #000; 
+	border-right: 2px solid #000;
+}
+div#maincontainer {
+	width: 1350px; 
+  	margin: 0 auto; 
+	padding: 0px;
+	text-align: left; /** to fix IE centering **/
+}
+div#svgcontainer {
+	float: left;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+.axis text { font-size: 12px; }
+.axis text.label { font-size: 12px; font-weight: bold; fill: gray; visibility: hidden; }
+text.numobjects { font-size: 13px; font-weight: bold; text-anchor: end; }
+
+line.horizontalGrid { fill: none; stroke: gray; stroke-width: 1.0px; opacity: 0.5; }
