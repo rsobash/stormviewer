@@ -1,1 +1,3 @@
-Files to test a D3 projection overlay onto an image
+D3 Storm Viewer
+
+Uses hagelslag output to display storm properties for a forecast
