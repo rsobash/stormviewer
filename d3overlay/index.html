@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<style>
+.graticule {
+  fill: none;
+  stroke: #777;
+  stroke-width: .5px;
+  stroke-opacity: .5;
+}
+
+.land {
+  fill: #222;
+  opacity: 0.25;
+}
+
+.county-boundary {
+  fill: none;
+  stroke: #fff;
+  stroke-width: .5px;
+}
+
+.state-boundary {
+  fill: none;
+  stroke: #fff;
+}
+
+svg { position: absolute; padding-top:16px; padding-left:38px;}
+img { position: absolute; }
+.circle { fill: black; stroke: black; stroke-width: 5px; cursor: pointer; }
+.circlehover { stroke: red; }
+text { font-family: helvetica; font-size: 14px;}
+</style>
+<body>
+<img src="http://ensemble.ucar.edu/img/2016111800/hmuh_max_last.png"/>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var width = 1059,
+    height = 660;
+
+var projection = d3.geo.conicConformal()
+    .rotate([98, 0, 2.4])
+    .center([0, 39])
+    .parallels([32.0, 46.0])
+    .scale(1425)
+    .translate([width / 2, height / 2])
+    .precision(.1);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+//var graticule = d3.geo.graticule()
+//    .extent([[-98 - 45, 38 - 45], [-98 + 45, 38 + 45]])
+//    .step([5, 5]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    //.on("mousemove", mousemove)
+    .on("mouseout", function() { textbox.text('Lat/lon test'); })
+    .on("click", function() {
+        var latlon = projection.invert(d3.mouse(this));
+        //window.location.href = "https://maps.google.com/?q="+latlon[1]+","+latlon[0]+"&ll="+latlon[1]+","+latlon[0] +"&z=6";
+    });
+
+//function mousemove() {
+//    textbox.text(projection.invert(d3.mouse(this)));
+//}
+
+//d3.json("us.json", function(error, us) {
+//  if (error) throw error;
+
+  //svg.insert("path", ".graticule")
+  //    .datum(topojson.feature(us, us.objects.land))
+  //    .attr("class", "land")
+  //    .attr("d", path);
+
+  //svg.insert("path", ".graticule")
+  //    .datum(topojson.mesh(us, us.objects.counties, function(a, b) { return a !== b && !(a.id / 1000 ^ b.id / 1000); }))
+  //    .attr("class", "county-boundary")
+  //    .attr("d", path);
+
+  //svg.insert("path", ".graticule")
+  //    .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+  //    .attr("class", "state-boundary")
+  //    .attr("d", path);
+
+//});
+
+//  d3.csv("stations_new.txt", function(error, data) {
+//    svg.selectAll(".circle")
+//      .data(data).enter()
+//      .append("circle")
+//      .attr("class", "circle")
+//      .attr("cx", function(d) {  return projection([d.lon, d.lat])[0]; })
+//      .attr("cy", function(d) {  return projection([d.lon, d.lat])[1]; })
+//      .attr("r", 1)
+//      .on("mouseover", function(d) { d3.select(this).classed("stnhover", true); }) //d3.select('.activesitetext').html(d.name+", "+d.state); })
+//      .on("mouseout", function(d) { d3.select(this).classed("stnhover", false); }) //d3.select('.activesitetext').html(activesitename); })
+//  });
+
+  for (var i=1; i<=10; i++) {
+    d3.csv("../track_step_NCAR_mem"+i+"_20161118.csv", function(error, data) {
+  
+      svg.selectAll(".circle_mem"+i)
+          .data(data).enter()
+          .append("circle")
+          .attr("class", "circle")
+          .attr("cx", function(d) {  return projection([d.Centroid_Lon, d.Centroid_Lat])[0] }) 
+          .attr("cy", function(d) {  return projection([d.Centroid_Lon, d.Centroid_Lat])[1] }) 
+          .attr("r", 1)
+          .on("mouseover", function(d) { d3.select(this).classed("circlehover", true); textbox.text(d.UP_HELI_MAX_max); })
+          .on("mouseout", function(d) { d3.select(this).classed("circlehover", false); })
+     });
+  
+  }
+
+var textbox = svg.append("text").attr("x", 500).attr("y", 10).text('Lat/Lon test');
+
+d3.select(self.frameElement).style("height", height + "px");
+</script>
+
+<div style="clear:both;">Testing</div>
+</body>
+</html>
