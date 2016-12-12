@@ -74,11 +74,13 @@ var all_fields = { 'SBCAPE': { 'field':'CAPE_SFC-potential_mean', 'label':'SBCAP
 				   'UH03':   { 'field':'UP_HELI_MAX_max', 'label':'0 - 3 km UH (m2/s2)', 'domain':[0,500] },
 				   'UP':     { 'field':'W_UP_MAX_max',     'label':'Max Updraft (m/s)', 'domain':[0,60] },
 				   'DN':     { 'field':'W_DN_MAX_max',     'label':'Max Downdraft (m/s)', 'domain':[-10,2] },
-				   'GRPL':   { 'field':'GRPL_MAX_max', 'label':'Col. Int. Graupel (mm)', 'domain':[6,60] }
+				   'GRPL':   { 'field':'GRPL_MAX_max', 'label':'Col. Int. Graupel (mm)', 'domain':[6,70] },
+				   'AREA':   { 'field':'area', 'label':'Object Area', 'domain':[5,50] },
+				   'DURATION':   { 'field':'Duration', 'label':'Track Duration', 'domain':[0,10] }
 				 }
 
-var scatterx = all_fields['SBCAPE'];
-var scattery = all_fields['SHR1'];
+var scatterx = all_fields['UP'];
+var scattery = all_fields['GRPL'];
 
 x.domain(scatterx.domain);
 y.domain(scattery.domain);
@@ -151,7 +153,6 @@ d3.json("us.json", function(error, us) {
   var num_tiles_loaded = 0;
   d3.csv("grid_corners.csv", function(error, gridcorners) {
   	     d3.csv("datacsv", function(error, data) {
-  	     	console.log(data.length);
   			for (var i=0; i<data.length-1; i++) {
 				var idx = parseInt(data[i].idx, 10);
 				var prob = parseInt(data[i].prob, 10);
@@ -184,6 +185,8 @@ for (var mem=1; mem<=10; mem++) {
           count_by_fhr[fhr] += 1
           count_by_mem[member-1] += 1
           
+          var id = data[num]['Step_ID'].split('_')
+          data[num]['Duration'] = (id[5] - id[4]);
           data[num]['SHR6-potential_mean'] = 1.944*Math.sqrt( Math.pow(data[num]['UBSHR6-potential_mean'],2) + Math.pow(data[num]['VBSHR6-potential_mean'],2) );
           data[num]['SHR1-potential_mean'] = 1.944*Math.sqrt( Math.pow(data[num]['UBSHR1-potential_mean'],2) + Math.pow(data[num]['VBSHR1-potential_mean'],2) );
 
@@ -231,7 +234,7 @@ for (var mem=1; mem<=10; mem++) {
           		else if (d['UP_HELI_MAX_max'] > 50) return 2;
           		else return 1; 
           })
-          .style("fill", function(d) { return color(member);}) 
+          .style("fill", function(d) { return color(d['Duration']);}) 
           .on("mouseover", function(d) {
               var thiselement = d3.select(this);
               var cx = thiselement.attr("cx");
