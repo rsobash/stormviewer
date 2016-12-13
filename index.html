@@ -19,8 +19,6 @@
 
 <div id="rolloverdiv-members">
 <div class="rollover member" id="m1">Mem 1</div><div class="rollover member" id="m2">Mem 2</div><div class="rollover member" id="m3">Mem 3</div><div class="rollover member" id="m4">Mem 4</div><div class="rollover member" id="m5">Mem 5</div><div class="rollover member" id="m6">Mem 6</div><div class="rollover member" id="m7">Mem 7</div><div class="rollover member" id="m8">Mem 8</div><div class="rollover member" id="m9">Mem 9</div><div class="rollover member" id="m10">Mem 10</div>
-
-<div class="rollover member loaded" id="showall" style="padding-top:30px;border:0px;">Show All Objects</div>
 </div>
 
 <div id="svgcontainer"></div>
@@ -161,10 +159,10 @@ d3.json("us.json", function(error, us) {
 				
 usaFeatureCollection['features'].push({"type":"Feature", "geometry": {"type":"Polygon", "coordinates":[[[gridcorners[idx].lon,gridcorners[idx].lat],[gridcorners[idx+92].lon,gridcorners[idx+92].lat],[gridcorners[idx+93].lon,gridcorners[idx+93].lat],[gridcorners[idx+1].lon,gridcorners[idx+1].lat],[gridcorners[idx+1].lon,gridcorners[idx].lat]]]}});
  
-        		var usaSVG = mapbox.append("path")
-        			.attr("class", "gridbox")
-        			.attr("d", path(usaFeatureCollection))
-        			.style('fill', function(d) { return colorprobs(prob); });
+        		//var usaSVG = mapbox.append("path")
+        		//	.attr("class", "gridbox")
+        		//	.attr("d", path(usaFeatureCollection))
+        		//	.style('fill', function(d) { return colorprobs(prob); });
         	}
 		});
 });
@@ -187,9 +185,11 @@ for (var mem=1; mem<=10; mem++) {
           
           var id = data[num]['Step_ID'].split('_')
           data[num]['Duration'] = (id[5] - id[4]);
+          data[num]['Member'] = member;
           data[num]['SHR6-potential_mean'] = 1.944*Math.sqrt( Math.pow(data[num]['UBSHR6-potential_mean'],2) + Math.pow(data[num]['VBSHR6-potential_mean'],2) );
           data[num]['SHR1-potential_mean'] = 1.944*Math.sqrt( Math.pow(data[num]['UBSHR1-potential_mean'],2) + Math.pow(data[num]['VBSHR1-potential_mean'],2) );
 
+          // FORECAST HOUR ROLLOVERS
           var fhrrollover = $("div#"+fhr+".rollover")
           if (!fhrrollover.hasClass("counted")) {
               fhrrollover.addClass("counted");
@@ -199,11 +199,14 @@ for (var mem=1; mem<=10; mem++) {
                   $("div#"+fhr+".rollover").addClass("selected")
 
                   all_circles.style("visibility", "hidden");
-                  all_circles_fhr[fhr].style("visibility", "visible");
+                  all_circles_fhr[fhr]
+                  	.filter(function() { return (!d3.select(this).classed("filtered")); })
+                  	.style("visibility", "visible");
                   textbox.text(count_by_fhr[fhr]+" objects");
              });
           }
           
+          // MEMBER ROLLOVERS
           var memrollover = $("div#m"+member+".rollover")
           if (!memrollover.hasClass("counted")) { 
              memrollover.addClass("counted");
@@ -219,8 +222,8 @@ for (var mem=1; mem<=10; mem++) {
           }
       } // end for loop over objects 
        
-	  // plot scatter plot points
-      dotbox.selectAll(".circle_mem"+mem)
+	  // PLOT POINTS ON MAP
+      dotbox.selectAll(".circle-mem"+member)
           .data(data).enter()
           .append("circle")
           .attr("id", function(d,i) { return "dot"+member+"-"+i; })
@@ -234,7 +237,7 @@ for (var mem=1; mem<=10; mem++) {
           		else if (d['UP_HELI_MAX_max'] > 50) return 2;
           		else return 1; 
           })
-          .style("fill", function(d) { return color(d['Duration']);}) 
+          //.style("fill", function(d) { return color(d['Duration']);}) 
           .on("mouseover", function(d) {
               var thiselement = d3.select(this);
               var cx = thiselement.attr("cx");
@@ -249,6 +252,7 @@ for (var mem=1; mem<=10; mem++) {
               $("div#"+thisfhr+".rollover").addClass("selected");
               $("div#m"+thismem+".rollover").addClass("selected");
           });
+          
      
       histosvg.selectAll("dot")
         .data(data).enter()
@@ -319,14 +323,6 @@ for (var mem=1; mem<=10; mem++) {
 		 			.attr("x", histo_width)
 		 			.attr("y", -5)
 		 			.text(num_objects+" objects");
-
-		 d3.select("div#showall").on("click", function() { 
-		 		all_circles.style("visibility", "visible");
-		 		d3.selectAll("path.gridbox").style("visibility", "visible");
-		 		
-		 		textbox.text(num_objects+" objects");
-		 		$("div.rollover").removeClass("selected");
-		 	});
      }
           
      });
@@ -342,15 +338,42 @@ function zoomed() {
   mapbox.select(".county-boundary").style("stroke-width", 0.5 / d3.event.scale + "px");
 }
 
-//var textbox = svg.append("text").attr("x", 500).attr("y", 10).text('Lat/Lon test');
+function showAll() {
+	all_circles.style("visibility", "visible");
+	all_circles.classed("filtered", false);
+	d3.selectAll("path.gridbox").style("visibility", "visible");
+		 		
+	textbox.text(num_objects+" objects");
+	$("div.rollover").removeClass("selected");
+}
+
+function filterObjects(field, thresh) {
+	all_circles.classed("filtered", function(d) { return (d[field] < thresh) })
+		.style("visibility", function(d) { if (d[field] < thresh) return "hidden"; else return "visible"; });
+	
+}
+
+function changeColor(field) {
+	var color = d3.scale.category20b();
+	all_circles.style("fill", function(d) { return color(d[field]); });
+}
 
 d3.select(self.frameElement).style("height", height + "px");
 </script>
 
-<div style="clear:both;">
-<div style="clear:both; font-size:11px; color: #AFAFAF;">Storm Viewer V1.0</div>
-<div class="rollover member loaded" id="filter-uh" style="width:100px">Show UH > 100</div>
+<div style="clear:both;" id="buttondiv">
+Object Filters:
+<input type="button" onClick="showAll()" value="Show All Objects" />
+<input type="button" onClick="filterObjects('UP_HELI_MAX_max', 50)" value="UH >= 50" />
+<input type="button" onClick="filterObjects('UP_HELI_MAX_max', 100)" value="UH >= 100" />
+<input type="button" onClick="filterObjects('UP_HELI_MAX_max', 150)" value="UH >= 150" />
+<input type="button" onClick="filterObjects('Duration', 6)" value="Duration >= 6 hrs" /><br/>
+Color Filters:
+<input type="button" onClick="changeColor('Duration')" value="Duration" />
+<input type="button" onClick="changeColor('Member')" value="Member" />
 
+
+<div style="clear:both; font-size:11px; color: #AFAFAF;">Storm Viewer V1.0</div>
 </div>
 
 </div>
