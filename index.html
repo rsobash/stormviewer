@@ -110,6 +110,8 @@ histosvg.append("g").attr("class", "y axis").call(yAxis)
       .style("text-anchor", "start")
       .text(scattery.label);
 
+// *** DRAW MAP AND LAYERS ABOVE MAP ***//
+
 var mapbox = svg.append("g");
 
 svg.append("rect")
@@ -117,8 +119,8 @@ svg.append("rect")
     .attr("width", width)
     .attr("height", height)
     .call(zoom);
-    
-var dotbox = svg.append("g");
+
+var dotbox = svg.append("g"); 
     
 var count_by_fhr = Array(49);
 var count_by_mem = Array(10);
@@ -143,7 +145,7 @@ d3.json("us.json", function(error, us) {
       .attr("class", "state-boundary")
       .attr("d", path);
   
-  mapbox.append("text").attr("x", 300).attr("y", 300).text('Loading . . .').style('font-size', '48px');
+ // mapbox.append("text").attr("x", 300).attr("y", 300).text('Loading . . .').style('font-size', '48px');
   
 
  var colorprobs = d3.scale.linear().domain([0,20,60]).range(["#cccccc", "#aaaaaa", "red"]);
@@ -198,10 +200,10 @@ for (var mem=1; mem<=10; mem++) {
                   $("div.rollover").removeClass("selected");
                   $("div#"+fhr+".rollover").addClass("selected")
 
-                  all_circles.style("visibility", "hidden");
+                  all_circles.classed("hidden", true);
                   all_circles_fhr[fhr]
                   	.filter(function() { return (!d3.select(this).classed("filtered")); })
-                  	.style("visibility", "visible");
+                        .classed("hidden", false);
                   textbox.text(count_by_fhr[fhr]+" objects");
              });
           }
@@ -215,14 +217,15 @@ for (var mem=1; mem<=10; mem++) {
                   $("div.rollover").removeClass("selected");
                   $("div#m"+mem+".rollover").addClass("selected");
                   
-                  all_circles.style("visibility", "hidden");
-                  all_circles_mem[mem-1].style("visibility", "visible");
+                  all_circles.classed("hidden", true);
+                  all_circles_mem[mem-1].classed("hidden", false);
                   textbox.text(count_by_mem[mem-1]+" objects");
              });
           }
       } // end for loop over objects 
-       
-	  // PLOT POINTS ON MAP
+      
+ 
+      // PLOT POINTS ON MAP
       dotbox.selectAll(".circle-mem"+member)
           .data(data).enter()
           .append("circle")
@@ -237,7 +240,7 @@ for (var mem=1; mem<=10; mem++) {
           		else if (d['UP_HELI_MAX_max'] > 50) return 2;
           		else return 1; 
           })
-          //.style("fill", function(d) { return color(d['Duration']);}) 
+          .style("fill", function(d) { return color(d['Duration']);}) 
           .on("mouseover", function(d) {
               var thiselement = d3.select(this);
               var cx = thiselement.attr("cx");
@@ -287,7 +290,7 @@ for (var mem=1; mem<=10; mem++) {
      
          hover = dotbox.append("circle").attr("r", 5).attr("class", "hoverdot").attr("cx", -100).attr("cy", -100);
          hoverdot = histosvg.append("circle").attr("r", 5).attr("class", "hoverdot").attr("cx", -100).attr("cy", -100);
-         
+ 
          //var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["#eff3ff", "#3182bd"]);
          var colormem = d3.scale.linear().domain(d3.extent(count_by_mem)).range(["white", "#afafaf"]);
          var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["white", "#afafaf"]);
@@ -312,10 +315,10 @@ for (var mem=1; mem<=10; mem++) {
 		 d3.select("div#rolloverdiv").transition().duration(400).style("opacity", "1.0");
 		 d3.select("div#rolloverdiv-members").transition().duration(400).style("opacity", "1.0")
 		 		.each("start", function() {
-		 				mapbox.select("text").style("visibility", "hidden"); 
-		 				all_circles.style("visibility", "visible");
-		 				d3.selectAll("path.gridbox").style("visibility", "visible");
-		 				histosvg.selectAll("text.label").style("visibility", "visible");
+		 				mapbox.select("text").classed("hidden", true); 
+		 				all_circles.classed("hidden", false);
+		 				d3.selectAll("path.gridbox").classed("hidden", false);
+		 				histosvg.selectAll("text.label").classed("hidden", false);
 		 		});
 		 
 		 textbox = histosvg.append("text")
@@ -339,18 +342,16 @@ function zoomed() {
 }
 
 function showAll() {
-	all_circles.style("visibility", "visible");
+	all_circles.classed("hidden", false);
 	all_circles.classed("filtered", false);
-	d3.selectAll("path.gridbox").style("visibility", "visible");
+	d3.selectAll("path.gridbox").classed("hidden", false);
 		 		
 	textbox.text(num_objects+" objects");
 	$("div.rollover").removeClass("selected");
 }
 
 function filterObjects(field, thresh) {
-	all_circles.classed("filtered", function(d) { return (d[field] < thresh) })
-		.style("visibility", function(d) { if (d[field] < thresh) return "hidden"; else return "visible"; });
-	
+	all_circles.classed("filtered", function(d) { return (d[field] < thresh) });	
 }
 
 function changeColor(field) {

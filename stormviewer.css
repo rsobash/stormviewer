@@ -24,7 +24,8 @@ svg {
 	opacity: 0.5;
 }
 .histosvg { margin-left: 5px; border: 0px; float:left;}
-circle.circle { stroke-width: 1px; cursor: pointer; visibility: hidden; }
+circle.circle { stroke-width: 1px; cursor: pointer; }
+.hidden { visibility: hidden; }
 .filtered { visibility: hidden; }
 
 .hoverdot { fill: red; stroke: black; stroke-width: 1px; cursor: pointer;}
@@ -35,7 +36,6 @@ path.gridbox {
 	fill: gray;
 	stroke-width: 0px;
 	stroke: none;
-	visibility: hidden; 
 	opacity: 0.6; 
 }
 
@@ -121,7 +121,7 @@ div#svgcontainer {
   shape-rendering: crispEdges;
 }
 .axis text { font-size: 12px; }
-.axis text.label { font-size: 12px; font-weight: bold; fill: gray; visibility: hidden; }
+.axis text.label { font-size: 12px; font-weight: bold; fill: gray; }
 text.numobjects { font-size: 13px; font-weight: bold; text-anchor: end; }
 
 line.horizontalGrid { fill: none; stroke: gray; stroke-width: 1.0px; opacity: 0.5; }
