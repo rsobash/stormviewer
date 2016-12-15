@@ -114,13 +114,17 @@ histosvg.append("g").attr("class", "y axis").call(yAxis)
 
 var mapbox = svg.append("g");
 
+var dotbox = svg.append("g"); 
+
 svg.append("rect")
     .attr("class", "overlay")
     .attr("width", width)
     .attr("height", height)
+    .on("mouseover", function() { hover.classed("hidden", false); })
+    .on("mouseout", function() { hover.classed("hidden", true); })
+    .on("mousemove", moveDot)
     .call(zoom);
 
-var dotbox = svg.append("g"); 
     
 var count_by_fhr = Array(49);
 var count_by_mem = Array(10);
@@ -226,7 +230,7 @@ for (var mem=1; mem<=10; mem++) {
       
  
       // PLOT POINTS ON MAP
-      dotbox.selectAll(".circle-mem"+member)
+      mapbox.selectAll(".circle-mem"+member)
           .data(data).enter()
           .append("circle")
           .attr("id", function(d,i) { return "dot"+member+"-"+i; })
@@ -240,14 +244,14 @@ for (var mem=1; mem<=10; mem++) {
           		else if (d['UP_HELI_MAX_max'] > 50) return 2;
           		else return 1; 
           })
-          .style("fill", function(d) { return color(d['Duration']);}) 
+          //.style("fill", function(d) { return color(d['Duration']);}) 
           .on("mouseover", function(d) {
               var thiselement = d3.select(this);
               var cx = thiselement.attr("cx");
               var cy = thiselement.attr("cy");
-              hover.attr("cx", cx).attr("cy", cy); 
-              hoverdot.attr("cx", x(d[scatterx.field]) )
-                      .attr("cy", y(d[scattery.field]) );
+              //hover.attr("cx", cx).attr("cy", cy); 
+              //hoverdot.attr("cx", x(d[scatterx.field]) )
+              //        .attr("cy", y(d[scattery.field]) );
     
               var thisfhr = thiselement.attr("class").split(" ")[2].substring(3);
               var thismem = thiselement.attr("class").split(" ")[1].substring(3);
@@ -270,10 +274,10 @@ for (var mem=1; mem<=10; mem++) {
               var thisid = thiselement.attr("id");
               var cx = dotbox.select("#"+thisid).attr("cx");
               var cy = dotbox.select("#"+thisid).attr("cy");
-              hover.attr("cx", cx).attr("cy", cy);
+              //hover.attr("cx", cx).attr("cy", cy);
                
-              hoverdot.attr("cx", thiselement.attr("cx") )
-              hoverdot.attr("cy", thiselement.attr("cy") );  
+              //hoverdot.attr("cx", thiselement.attr("cx") )
+              //hoverdot.attr("cy", thiselement.attr("cy") );  
               
               var thisfhr = thiselement.attr("class").split(" ")[2].substring(3);
               var thismem = thiselement.attr("class").split(" ")[1].substring(3);
@@ -358,6 +362,26 @@ function changeColor(field) {
 	var color = d3.scale.category20b();
 	all_circles.style("fill", function(d) { return color(d[field]); });
 }
+
+function moveDot() {
+    var mousecoords = d3.mouse(this);
+    var mindist = 100000;
+    var xclosest = 0, yclosest = 0;
+    var xdiff = 0, ydiff = 0;
+    
+    all_circles.each(function(d) {
+        var xydot = projection([d['Centroid_Lon'], d['Centroid_Lat']]);
+        var xdiff = Math.abs(xydot[0] - mousecoords[0]);
+        var ydiff = Math.abs(xydot[1] - mousecoords[1]);
+        if (xdiff < xmindiff) { var xmindiff = xdiff; xclosest = xydot[0]; }
+        if (ydiff < ymindiff) { var ymindiff = ydiff; yclosest = xydot[1]; }
+    });
+
+    //hover.attr("cx", coords[0]).attr("cy", coords[1]);
+    hover.attr("cx", xclosest).attr("cy", yclosest);
+}
+
+
 
 d3.select(self.frameElement).style("height", height + "px");
 </script>
