@@ -292,7 +292,7 @@ for (var mem=1; mem<=10; mem++) {
          all_circles_fhr = Array(49);
          all_circles_mem = Array(10);
      
-         hover = dotbox.append("circle").attr("r", 5).attr("class", "hoverdot").attr("cx", -100).attr("cy", -100);
+         hover = dotbox.append("circle").attr("r", 5).attr("class", "hoverdot").attr("cx", 0).attr("cy", 0);
          hoverdot = histosvg.append("circle").attr("r", 5).attr("class", "hoverdot").attr("cx", -100).attr("cy", -100);
  
          //var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["#eff3ff", "#3182bd"]);
@@ -365,20 +365,24 @@ function changeColor(field) {
 
 function moveDot() {
     var mousecoords = d3.mouse(this);
-    var mindist = 100000;
-    var xclosest = 0, yclosest = 0;
+    var mindiff = 1000;
+    var coord = [0,0];
     var xdiff = 0, ydiff = 0;
     
     all_circles.each(function(d) {
-        var xydot = projection([d['Centroid_Lon'], d['Centroid_Lat']]);
-        var xdiff = Math.abs(xydot[0] - mousecoords[0]);
-        var ydiff = Math.abs(xydot[1] - mousecoords[1]);
-        if (xdiff < xmindiff) { var xmindiff = xdiff; xclosest = xydot[0]; }
-        if (ydiff < ymindiff) { var ymindiff = ydiff; yclosest = xydot[1]; }
+    	//this class check seems kind of slow...
+    	if (!d3.select(this).classed("hidden") && !d3.select(this).classed("filtered")) {
+            var xydot = projection([d['Centroid_Lon'], d['Centroid_Lat']]);
+            var xdiff = Math.abs(xydot[0] - mousecoords[0]);
+            var ydiff = Math.abs(xydot[1] - mousecoords[1]);
+            var thisdiff = xdiff + ydiff;
+            if (thisdiff <= mindiff) { mindiff = thisdiff; coord = xydot; }
+        }
     });
 
-    //hover.attr("cx", coords[0]).attr("cy", coords[1]);
-    hover.attr("cx", xclosest).attr("cy", yclosest);
+    if (mindiff < 10) hover.attr("cx", coord[0]).attr("cy", coord[1]);
+    //hover.attr("transform", "translate(" + coord + ")")
+    //hoverdot.attr("transform", "translate(" + xycoord[minidx] + ")")
 }
 
 
@@ -398,7 +402,7 @@ Color Filters:
 <input type="button" onClick="changeColor('Member')" value="Member" />
 
 
-<div style="clear:both; font-size:11px; color: #AFAFAF;">Storm Viewer V1.0</div>
+<div style="clear:both; font-size:11px; color: #AFAFAF;">Storm Viewer V1.0 -- objects identified using minimum column graupel threshold of 0.25 in.</div>
 </div>
 
 </div>
