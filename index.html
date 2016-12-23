@@ -120,7 +120,7 @@ svg.append("rect")
     .attr("class", "overlay")
     .attr("width", width)
     .attr("height", height)
-    .on("mouseover", function() { hover.classed("hidden", false); })
+    .on("mouseover", function() { selectActiveCircles(); hover.classed("hidden", false); })
     .on("mouseout", function() { hover.classed("hidden", true); })
     .on("mousemove", moveDot)
     .call(zoom);
@@ -201,13 +201,13 @@ for (var mem=1; mem<=10; mem++) {
               fhrrollover.addClass("counted");
               fhrrollover.mouseover(function() {
                   var fhr = d3.select(this).attr("id");
-                  $("div.rollover").removeClass("selected");
-                  $("div#"+fhr+".rollover").addClass("selected")
+                  d3.selectAll("div.rollover").classed("selected", false);
+                  $("div#"+fhr+".rollover").addClass("selected");
 
                   all_circles.classed("hidden", true);
-                  all_circles_fhr[fhr]
-                  	.filter(function() { return (!d3.select(this).classed("filtered")); })
-                        .classed("hidden", false);
+                  all_circles_fhr[fhr].classed("hidden", false);
+                  //.filter(function() { return (!d3.select(this).classed("filtered")); })
+                        
                   textbox.text(count_by_fhr[fhr]+" objects");
              });
           }
@@ -293,7 +293,7 @@ for (var mem=1; mem<=10; mem++) {
          all_circles_mem = Array(10);
      
          hover = dotbox.append("circle").attr("r", 5).attr("class", "hoverdot").attr("cx", 0).attr("cy", 0);
-         hoverdot = histosvg.append("circle").attr("r", 5).attr("class", "hoverdot").attr("cx", -100).attr("cy", -100);
+         //hoverdot = histosvg.append("circle").attr("r", 5).attr("class", "hoverdot").attr("cx", -100).attr("cy", -100);
  
          //var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["#eff3ff", "#3182bd"]);
          var colormem = d3.scale.linear().domain(d3.extent(count_by_mem)).range(["white", "#afafaf"]);
@@ -330,6 +330,7 @@ for (var mem=1; mem<=10; mem++) {
 		 			.attr("x", histo_width)
 		 			.attr("y", -5)
 		 			.text(num_objects+" objects");
+		 selectActiveCircles();
      }
           
      });
@@ -338,11 +339,11 @@ for (var mem=1; mem<=10; mem++) {
 });
 
 function zoomed() {
-  mapbox.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-  dotbox.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    mapbox.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    dotbox.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 
-  mapbox.select(".state-boundary").style("stroke-width", 0.5 / d3.event.scale + "px");
-  mapbox.select(".county-boundary").style("stroke-width", 0.5 / d3.event.scale + "px");
+    mapbox.select(".state-boundary").style("stroke-width", 0.5 / d3.event.scale + "px");
+    mapbox.select(".county-boundary").style("stroke-width", 0.5 / d3.event.scale + "px");
 }
 
 function showAll() {
@@ -355,7 +356,7 @@ function showAll() {
 }
 
 function filterObjects(field, thresh) {
-	all_circles.classed("filtered", function(d) { return (d[field] < thresh) });	
+	all_circles.classed("filtered", function(d) { return (d[field] < thresh) });
 }
 
 function changeColor(field) {
@@ -363,26 +364,27 @@ function changeColor(field) {
 	all_circles.style("fill", function(d) { return color(d[field]); });
 }
 
+// update available circles to be selected
+function selectActiveCircles() {
+	active_circles = all_circles.filter(function() { return (!d3.select(this).classed("filtered") && !d3.select(this).classed("hidden")); });
+}
+
 function moveDot() {
-    var mousecoords = d3.mouse(this);
+    var mousecoords = d3.mouse(dotbox.node());
     var mindiff = 1000;
-    var coord = [0,0];
-    var xdiff = 0, ydiff = 0;
+    var coord   = [0,0];
+    var xdiff   = 0,
+        ydiff   = 0;
     
-    all_circles.each(function(d) {
-    	//this class check seems kind of slow...
-    	if (!d3.select(this).classed("hidden") && !d3.select(this).classed("filtered")) {
+    active_circles.each(function(d) {
             var xydot = projection([d['Centroid_Lon'], d['Centroid_Lat']]);
             var xdiff = Math.abs(xydot[0] - mousecoords[0]);
             var ydiff = Math.abs(xydot[1] - mousecoords[1]);
             var thisdiff = xdiff + ydiff;
             if (thisdiff <= mindiff) { mindiff = thisdiff; coord = xydot; }
-        }
     });
 
-    if (mindiff < 10) hover.attr("cx", coord[0]).attr("cy", coord[1]);
-    //hover.attr("transform", "translate(" + coord + ")")
-    //hoverdot.attr("transform", "translate(" + xycoord[minidx] + ")")
+    if (mindiff < 10) hover.attr("transform", "translate(" + coord + ")");
 }
 
 
