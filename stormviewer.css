@@ -23,12 +23,16 @@ svg {
 	float: left;
 	opacity: 0.5;
 }
+.hoverdot { fill: red; stroke: white; stroke-width: 2px; cursor: pointer; }
+.hoverdot.scatter { fill: red; stroke: white; stroke-width: 2px; }
+
 .histosvg { margin-left: 5px; border: 0px; float:left;}
 circle.circle { stroke-width: 1px; cursor: pointer; }
+circle.scatter { fill: gray; }
+
 .hidden { visibility: hidden; }
 .filtered { visibility: hidden; }
 
-.hoverdot { fill: red; stroke: black; stroke-width: 1px; cursor: pointer;}
 text { font-family: helvetica; font-size: 14px;}
 .overlay { fill: none; pointer-events: all; }
 

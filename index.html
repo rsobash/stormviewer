@@ -120,8 +120,8 @@ svg.append("rect")
     .attr("class", "overlay")
     .attr("width", width)
     .attr("height", height)
-    .on("mouseover", function() { selectActiveCircles(); hover.classed("hidden", false); })
-    .on("mouseout", function() { hover.classed("hidden", true); })
+    .on("mouseover", function() { selectActiveCircles(); })
+    .on("mouseout", function() { hover.classed("hidden", true); hoverdot.classed("hidden", true);})
     .on("mousemove", moveDot)
     .call(zoom);
 
@@ -243,47 +243,30 @@ for (var mem=1; mem<=10; mem++) {
           		else if (d['UP_HELI_MAX_max'] > 100) return 4;
           		else if (d['UP_HELI_MAX_max'] > 50) return 2;
           		else return 1; 
-          })
-          //.style("fill", function(d) { return color(d['Duration']);}) 
-          .on("mouseover", function(d) {
-              var thiselement = d3.select(this);
-              var cx = thiselement.attr("cx");
-              var cy = thiselement.attr("cy");
-              //hover.attr("cx", cx).attr("cy", cy); 
-              //hoverdot.attr("cx", x(d[scatterx.field]) )
-              //        .attr("cy", y(d[scattery.field]) );
-    
-              var thisfhr = thiselement.attr("class").split(" ")[2].substring(3);
-              var thismem = thiselement.attr("class").split(" ")[1].substring(3);
-			  $("div.rollover").removeClass("selected");
-              $("div#"+thisfhr+".rollover").addClass("selected");
-              $("div#m"+thismem+".rollover").addClass("selected");
           });
-          
      
+      // PLOT DOTS ON SCATTER PLOT
       histosvg.selectAll("dot")
         .data(data).enter()
       .append("circle")
         .attr("r", 2.5)
           .attr("id", function(d,i) { return "dot"+member+"-"+i; })
-          .attr("class", function(d) { return "circle mem"+member+" fhr"+parseInt(d['Forecast_Hour']); })
+          .attr("class", function(d) { return "circle scatter mem"+member+" fhr"+parseInt(d['Forecast_Hour']); })
         .attr("cx", function(d) { return x(d[scatterx.field]); })
         .attr("cy", function(d) { return y(d[scattery.field]); })
         .on("mouseover", function(d) {
               var thiselement = d3.select(this);
               var thisid = thiselement.attr("id");
-              var cx = dotbox.select("#"+thisid).attr("cx");
-              var cy = dotbox.select("#"+thisid).attr("cy");
-              //hover.attr("cx", cx).attr("cy", cy);
-               
-              //hoverdot.attr("cx", thiselement.attr("cx") )
-              //hoverdot.attr("cy", thiselement.attr("cy") );  
+              var cx = mapbox.select("#"+thisid).attr("cx");
+              var cy = mapbox.select("#"+thisid).attr("cy");
+              hover.attr("transform", "translate(" + cx +","+ cy + ")")               
+              hoverdot.attr("transform", "translate(" + thiselement.attr("cx") +","+ thiselement.attr("cy") + ")")
               
-              var thisfhr = thiselement.attr("class").split(" ")[2].substring(3);
-              var thismem = thiselement.attr("class").split(" ")[1].substring(3);
-			  $("div.rollover").removeClass("selected");
-              $("div#"+thisfhr+".rollover").addClass("selected");
-              $("div#m"+thismem+".rollover").addClass("selected");
+              //var thisfhr = thiselement.attr("class").split(" ")[2].substring(3);
+              //var thismem = thiselement.attr("class").split(" ")[1].substring(3);
+			  //$("div.rollover").removeClass("selected");
+              //$("div#"+thisfhr+".rollover").addClass("selected");
+              //$("div#m"+thismem+".rollover").addClass("selected");
           });
                
      // execute this code when all the files have loaded
@@ -293,7 +276,7 @@ for (var mem=1; mem<=10; mem++) {
          all_circles_mem = Array(10);
      
          hover = dotbox.append("circle").attr("r", 5).attr("class", "hoverdot").attr("cx", 0).attr("cy", 0);
-         //hoverdot = histosvg.append("circle").attr("r", 5).attr("class", "hoverdot").attr("cx", -100).attr("cy", -100);
+         hoverdot = histosvg.append("circle").attr("r", 5).attr("class", "hoverdot scatter").attr("cx", 0).attr("cy", 0);
  
          //var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["#eff3ff", "#3182bd"]);
          var colormem = d3.scale.linear().domain(d3.extent(count_by_mem)).range(["white", "#afafaf"]);
@@ -371,9 +354,9 @@ function selectActiveCircles() {
 
 function moveDot() {
     var mousecoords = d3.mouse(dotbox.node());
-    var mindiff = 1000;
-    var coord   = [0,0];
-    var xdiff   = 0,
+    var mindiff = 1000,
+        coord   = [0,0],
+        xdiff   = 0,
         ydiff   = 0;
     
     active_circles.each(function(d) {
@@ -381,10 +364,14 @@ function moveDot() {
             var xdiff = Math.abs(xydot[0] - mousecoords[0]);
             var ydiff = Math.abs(xydot[1] - mousecoords[1]);
             var thisdiff = xdiff + ydiff;
-            if (thisdiff <= mindiff) { mindiff = thisdiff; coord = xydot; }
+            if (thisdiff <= mindiff) { mindiff = thisdiff; coord = xydot; closestdot = this; }
     });
 
-    if (mindiff < 10) hover.attr("transform", "translate(" + coord + ")");
+    if (mindiff < 10) {
+        hover.classed("hidden", false); hoverdot.classed("hidden", false);
+    	hover.attr("transform", "translate(" + coord + ")");
+    	d3.select(closestdot).each(function(d) { hoverdot.attr("transform", "translate(" + x(d[scatterx.field]) +","+ y(d[scattery.field]) + ")") });
+    }
 }
 
 
