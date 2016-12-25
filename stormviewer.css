@@ -96,7 +96,7 @@ div.rollover.member {
 	border-bottom: 0px;
 }
 div.rollover.selected {
-	/** background-color: #fee6ce; **/
+	background-color: red;
 	border-top: 2px solid #000; 
 	border-bottom: 2px solid #000; 
 	font-weight: bold;

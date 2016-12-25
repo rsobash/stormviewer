@@ -26,7 +26,7 @@
 
 <script>
 var width = 850,
-    height = 550;
+    height = 600;
 
 var projection = d3.geo.conicConformal()
     .rotate([98, 0, 2.4])
@@ -71,14 +71,17 @@ var all_fields = { 'SBCAPE': { 'field':'CAPE_SFC-potential_mean', 'label':'SBCAP
 				   'SHR1':   { 'field':'SHR1-potential_mean',     'label':'0 - 1 km Shear (kts)', 'domain':[0,100] },
 				   'UH25':   { 'field':'UP_HELI_MAX_max', 'label':'2 - 5 km UH (m2/s2)', 'domain':[0,500] },
 				   'UH03':   { 'field':'UP_HELI_MAX_max', 'label':'0 - 3 km UH (m2/s2)', 'domain':[0,500] },
+				   'UHMIN':  { 'field':'UP_HELI_MIN_min', 'label':'2 - 5 km Min UH (m2/s2)', 'domain':[-500,0] },
 				   'UP':     { 'field':'W_UP_MAX_max',     'label':'Max Updraft (m/s)', 'domain':[0,60] },
 				   'DN':     { 'field':'W_DN_MAX_max',     'label':'Max Downdraft (m/s)', 'domain':[-10,2] },
+				   'WSPD':     { 'field':'WSPD10MAX_max',     'label':'Max 10m Wind Speed (m/s)', 'domain':[0,80] },
+				   'RVORT':     { 'field':'RVORT1_MAX_max',     'label':'Max 1km Rel. Vort (s-1)', 'domain':[0,0.03] },
 				   'GRPL':   { 'field':'GRPL_MAX_max', 'label':'Col. Int. Graupel (mm)', 'domain':[6,70] },
 				   'AREA':   { 'field':'area', 'label':'Object Area', 'domain':[5,50] },
 				   'DURATION':   { 'field':'Duration', 'label':'Track Duration', 'domain':[0,10] }
 				 }
 
-var scatterx = all_fields['UP'];
+var scatterx = all_fields['UH25'];
 var scattery = all_fields['GRPL'];
 
 x.domain(scatterx.domain);
@@ -201,6 +204,7 @@ for (var mem=1; mem<=10; mem++) {
           var id = data[num]['Step_ID'].split('_')
           data[num]['Duration'] = (id[5] - id[4]);
           data[num]['Member'] = member;
+          data[num]['WSPD10MAX_max'] = 1.944*data[num]['WSPD10MAX_max'];
           data[num]['SHR6-potential_mean'] = 1.944*Math.sqrt( Math.pow(data[num]['UBSHR6-potential_mean'],2) + Math.pow(data[num]['VBSHR6-potential_mean'],2) );
           data[num]['SHR1-potential_mean'] = 1.944*Math.sqrt( Math.pow(data[num]['UBSHR1-potential_mean'],2) + Math.pow(data[num]['VBSHR1-potential_mean'],2) );
 
@@ -260,7 +264,7 @@ for (var mem=1; mem<=10; mem++) {
       .append("circle")
         .attr("r", 2.5)
           .attr("id", function(d,i) { return "dot"+member+"-"+i; })
-          .attr("class", function(d) { return "circle scatter mem"+member+" fhr"+parseInt(d['Forecast_Hour']); })
+          .attr("class", function(d) { return "circle mem"+member+" fhr"+parseInt(d['Forecast_Hour'])+" scatter"; })
         .attr("cx", function(d) { return x(d[scatterx.field]); })
         .attr("cy", function(d) { return y(d[scattery.field]); })
         .on("mouseover", function(d) {
@@ -269,13 +273,13 @@ for (var mem=1; mem<=10; mem++) {
               var cx = mapbox.select("#"+thisid).attr("cx");
               var cy = mapbox.select("#"+thisid).attr("cy");
               hover.attr("transform", "translate(" + cx +","+ cy + ")")               
-              hoverdot.attr("transform", "translate(" + thiselement.attr("cx") +","+ thiselement.attr("cy") + ")")
-              console.log(cx);
-              //var thisfhr = thiselement.attr("class").split(" ")[2].substring(3);
-              //var thismem = thiselement.attr("class").split(" ")[1].substring(3);
-			  //$("div.rollover").removeClass("selected");
-              //$("div#"+thisfhr+".rollover").addClass("selected");
-              //$("div#m"+thismem+".rollover").addClass("selected");
+              hoverdot.attr("transform", "translate(" + thiselement.attr("cx") +","+ thiselement.attr("cy") + ")");
+
+              var thisfhr = thiselement.attr("class").split(" ")[2].substring(3);
+              var thismem = thiselement.attr("class").split(" ")[1].substring(3);
+			  $("div.rollover").removeClass("selected");
+              $("div#"+thisfhr+".rollover").addClass("selected");
+              $("div#m"+thismem+".rollover").addClass("selected");
           });
                
      // execute this code when all the files have loaded
@@ -342,6 +346,11 @@ function showAll() {
 	all_circles.classed("hidden", false);
 	all_circles.classed("filtered", false);
 	d3.selectAll("path.gridbox").classed("hidden", false);
+	
+    mapbox.attr("transform", "translate(0,0)scale(1)");
+    dotbox.attr("transform", "translate(0,0)scale(1)");
+    mapbox.select(".state-boundary").style("stroke-width", "0.5px");
+    mapbox.select(".county-boundary").style("stroke-width", "0.5px");
 		 		
 	textbox.text(num_objects+" objects");
 	$("div.rollover").removeClass("selected");
@@ -349,6 +358,10 @@ function showAll() {
 
 function filterObjects(field, thresh) {
 	all_circles.classed("filtered", function(d) { return (d[field] < thresh) });
+}
+
+function filterByHour(shr, ehr) {
+    all_circles.classed("filtered", function(d) { return ((d['Forecast_Hour'] < shr) || (d['Forecast_Hour'] > ehr)) });
 }
 
 function changeColor(field) {
@@ -377,10 +390,17 @@ function moveDot() {
     });
 
     if (mindiff < 10) {
-        //hover.classed("hidden", false);
-        //hoverdot.classed("hidden", false);
+        hover.classed("hidden", false);
+        hoverdot.classed("hidden", false);
     	hover.attr("transform", "translate(" + coord + ")");
     	d3.select(closestdot).each(function(d) { hoverdot.attr("transform", "translate(" + x(d[scatterx.field]) +","+ y(d[scattery.field]) + ")") });
+    	
+    	var thisfhr = d3.select(closestdot).attr("class").split(" ")[2].substring(3);
+    	var thismem = d3.select(closestdot).attr("class").split(" ")[1].substring(3);
+		$("div.rollover").removeClass("selected");
+		$("div#"+thisfhr+".rollover").addClass("selected");
+        $("div#m"+thismem+".rollover").addClass("selected");
+        
     }
 }
 
@@ -390,18 +410,20 @@ d3.select(self.frameElement).style("height", height + "px");
 </script>
 
 <div style="clear:both;" id="buttondiv">
-Object Filters:
-<input type="button" onClick="showAll()" value="Show All Objects" />
+Storm Filters:
+<input type="button" onClick="showAll()" value="Reset" />
 <input type="button" onClick="filterObjects('UP_HELI_MAX_max', 50)" value="UH >= 50" />
 <input type="button" onClick="filterObjects('UP_HELI_MAX_max', 100)" value="UH >= 100" />
 <input type="button" onClick="filterObjects('UP_HELI_MAX_max', 150)" value="UH >= 150" />
-<input type="button" onClick="filterObjects('Duration', 6)" value="Duration >= 6 hrs" /><br/>
+<input type="button" onClick="filterByHour(13,36)" value="Day 1" />
+<input type="button" onClick="filterByHour(37,48)" value="Day 2" />
+<input type="button" onClick="filterObjects('Duration', 6)" value="Long Tracks" title="Tracks >= 6hr"/><br/>
 Color Filters:
 <input type="button" onClick="changeColor('Duration')" value="Duration" />
 <input type="button" onClick="changeColor('Member')" value="Member" />
 
 
-<div style="clear:both; font-size:11px; color: #AFAFAF;">Storm Viewer V1.0 -- objects identified using minimum column graupel threshold of 0.25 in.</div>
+<div style="clear:both; font-size:11px; color: #AFAFAF;">Storm Viewer V1.0 -- storms identified using minimum column graupel threshold of 0.25 in.<br/>Experimental interface - design subject to change</div>
 </div>
 
 </div>
