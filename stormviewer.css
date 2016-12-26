@@ -1,4 +1,3 @@
-
 .land {
   fill: #eeeeee;
   stroke: #000;
@@ -27,13 +26,13 @@ svg {
 .hoverdot.scatter { fill: red; stroke: white; stroke-width: 2px; }
 
 .histosvg { margin-left: 5px; border: 0px; float:left;}
-circle.circle { stroke-width: 1px; cursor: pointer; }
+circle.circle { stroke-width: 1px; }
 circle.scatter { fill: gray; }
 
 .hidden { visibility: hidden; }
 .filtered { visibility: hidden; }
 
-text { font-family: helvetica; font-size: 14px;}
+text { font-family: helvetica; font-size: 16px; }
 .overlay { fill: none; pointer-events: all; }
 
 path.gridbox { 
@@ -46,7 +45,7 @@ path.gridbox {
 rect.histobg { fill: #EFEFEF; }
 
 body {
-        margin: 0px;
+    margin: 0px;
 	padding: 0px;
 	font: normal normal normal 14px helvetica,arial;
 	text-align: center; /** for IE centering **/
