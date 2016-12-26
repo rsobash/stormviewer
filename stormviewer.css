@@ -32,7 +32,7 @@ circle.scatter { fill: gray; }
 .hidden { visibility: hidden; }
 .filtered { visibility: hidden; }
 
-text { font-family: helvetica; font-size: 16px; }
+text { font-family: helvetica; font-size: 14px; }
 .overlay { fill: none; pointer-events: all; }
 
 path.gridbox { 
