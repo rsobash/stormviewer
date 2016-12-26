@@ -43,7 +43,7 @@ path.gridbox {
 	opacity: 0.6; 
 }
 
-rect { fill: #EFEFEF; }
+rect.histobg { fill: #EFEFEF; }
 
 body {
         margin: 0px;
@@ -96,7 +96,6 @@ div.rollover.member {
 	border-bottom: 0px;
 }
 div.rollover.selected {
-	background-color: red;
 	border-top: 2px solid #000; 
 	border-bottom: 2px solid #000; 
 	font-weight: bold;
