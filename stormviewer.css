@@ -16,16 +16,19 @@
   stroke-width: 0.5px;
 }
 
-svg { 
+svg.mapsvg { 
 	margin-top: 0px;
-	border: 0px solid #EFEFEF;
 	float: left;
 	opacity: 0.5;
 }
+svg.histosvg { 
+	margin-left: 5px;
+	border: 0px;
+}
+
 .hoverdot { fill: red; stroke: white; stroke-width: 2px; cursor: pointer; }
 .hoverdot.scatter { fill: red; stroke: white; stroke-width: 2px; }
 
-.histosvg { margin-left: 5px; border: 0px; float:left;}
 circle.circle { stroke-width: 1px; }
 circle.scatter { fill: gray; }
 
@@ -123,7 +126,10 @@ div#svgcontainer {
   shape-rendering: crispEdges;
 }
 .axis text { font-size: 12px; }
-.axis text.label { font-size: 12px; font-weight: bold; fill: gray; }
+.axis text.label { font-size: 12px; font-weight: bold; fill: #A67B5B; }
 text.numobjects { font-size: 13px; font-weight: bold; text-anchor: end; }
 
 line.horizontalGrid { fill: none; stroke: gray; stroke-width: 1.0px; opacity: 0.5; }
+
+div.selection { padding: 3px; cursor: pointer; }
+div.selection:hover { background-color: #A67B5B; font-weight: bold; }

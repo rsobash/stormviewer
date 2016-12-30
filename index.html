@@ -47,7 +47,8 @@ var path = d3.geo.path()
 
 var svg = d3.select("div#svgcontainer").append("svg")
     .attr("width", width)
-    .attr("height", height);
+    .attr("height", height)
+    .attr("class", "mapsvg");
 
 // ######################## //
 // *** DRAW SCATTERPLOT *** //
@@ -63,14 +64,11 @@ var histosvg = d3.select("div#svgcontainer").append("svg")
 		 .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var x = d3.scale.linear().range([0, histo_width]);
-var y = d3.scale.linear().range([histo_height, 0]);
-
 var all_fields = { 'SBCAPE':    { 'field':'CAPE_SFC-potential_mean', 'label':'SBCAPE', 'domain':[0,5000] },
 				   'SHR6':      { 'field':'SHR6-potential_mean',     'label':'0 - 6 km Shear (kts)', 'domain':[0,100] },
 				   'SHR1':      { 'field':'SHR1-potential_mean',     'label':'0 - 1 km Shear (kts)', 'domain':[0,100] },
 				   'UH25':      { 'field':'UP_HELI_MAX_max', 'label':'2 - 5 km UH (m2/s2)', 'domain':[0,500] },
-				   'UH03':      { 'field':'UP_HELI_MAX_max', 'label':'0 - 3 km UH (m2/s2)', 'domain':[0,500] },
+				   'UH03':      { 'field':'UP_HELI_MAX03_max', 'label':'0 - 3 km UH (m2/s2)', 'domain':[0,500] },
 				   'UHMIN':     { 'field':'UP_HELI_MIN_min', 'label':'2 - 5 km Min UH (m2/s2)', 'domain':[-500,0] },
 				   'UP':        { 'field':'W_UP_MAX_max',     'label':'Max Updraft (m/s)', 'domain':[0,60] },
 				   'DN':        { 'field':'W_DN_MAX_max',     'label':'Max Downdraft (m/s)', 'domain':[-10,2] },
@@ -78,11 +76,14 @@ var all_fields = { 'SBCAPE':    { 'field':'CAPE_SFC-potential_mean', 'label':'SB
 				   'RVORT':     { 'field':'RVORT1_MAX_max',     'label':'Max 1km Rel. Vort (s-1)', 'domain':[0,0.03] },
 				   'GRPL':      { 'field':'GRPL_MAX_max', 'label':'Col. Int. Graupel (mm)', 'domain':[6,70] },
 				   'AREA':      { 'field':'area', 'label':'Object Area', 'domain':[5,50] },
-				   'DURATION':  { 'field':'Duration', 'label':'Track Duration', 'domain':[0,10] }
+				   'DURATION':  { 'field':'Duration', 'label':'Track Duration', 'domain':[0,10] },
 				 }
 
 var scatterx = all_fields['UH25'];
 var scattery = all_fields['GRPL'];
+
+var x = d3.scale.linear().range([0, histo_width]);
+var y = d3.scale.linear().range([histo_height, 0]);
 
 x.domain(scatterx.domain);
 y.domain(scattery.domain);
@@ -289,7 +290,7 @@ for (var mem=1; mem<=10; mem++) {
         	.attr("cy", 0);
          hoverdot = histodotbox.append("circle")
          	.attr("r", 6)
-         	.attr("class", "hoverdot scatter hidden")
+         	.attr("class", "hoverdot hidden")
          	.attr("cx", 0)
          	.attr("cy", 0);
  
@@ -363,12 +364,10 @@ function showAll() {
 }
 
 function filterObjects(field, thresh) {
-	showAll()
 	all_circles.classed("filtered", function(d) { return (d[field] < thresh) });
 }
 
 function filterByHour(shr, ehr) {
-	showAll()
     all_circles.classed("filtered", function(d) { return ((d['Forecast_Hour'] < shr) || (d['Forecast_Hour'] > ehr)) });
 }
 
@@ -402,7 +401,9 @@ function moveDotHisto() {
         hoverdot.classed("hidden", false);
     	hoverdot.attr("transform", "translate(" + coord + ")");
     	
-    	d3.select(closestdot).each(function(d) { hover.attr("transform", "translate(" + projection([d['Centroid_Lon'], d['Centroid_Lat']]) + ")") });
+    	d3.select(closestdot).each(function(d) { 
+    		hover.attr("transform", "translate(" + projection([d['Centroid_Lon'], d['Centroid_Lat']]) + ")") 
+    	});
     	
     	var thisfhr = d3.select(closestdot).attr("class").split(" ")[2].substring(3);
     	var thismem = d3.select(closestdot).attr("class").split(" ")[1].substring(3);
@@ -436,7 +437,9 @@ function moveDot() {
         hoverdot.classed("hidden", false);
     	hover.attr("transform", "translate(" + coord + ")");
     	
-    	d3.select(closestdot).each(function(d) { hoverdot.attr("transform", "translate(" + x(d[scatterx.field]) +","+ y(d[scattery.field]) + ")") });
+    	d3.select(closestdot).each(function(d) { 
+    		hoverdot.attr("transform", "translate(" + x(d[scatterx.field]) +","+ y(d[scattery.field]) + ")") 
+    	});
     	
     	var thisfhr = d3.select(closestdot).attr("class").split(" ")[2].substring(3);
     	var thismem = d3.select(closestdot).attr("class").split(" ")[1].substring(3);
@@ -450,17 +453,56 @@ function moveDot() {
     }
 }
 
+function changeHistoField(new_x, new_y) {
+	if (new_x != "same") scatterx = all_fields[new_x];
+	if (new_y != "same") scattery = all_fields[new_y];
+	
+	x.domain(scatterx.domain);
+    y.domain(scattery.domain);
+    
+    histosvg.selectAll("g.x.axis").transition().duration(200).call(xAxis)
+    histosvg.selectAll("g.x.axis text.label").text(scatterx.label);
+    histosvg.selectAll("g.y.axis").transition().duration(200).call(yAxis);
+    histosvg.selectAll("g.y.axis text.label").text(scattery.label);
+	
+    histodotbox.selectAll(".scatter")
+        .attr("cx", function(d) { return x(d[scatterx.field]); })
+        .attr("cy", function(d) { return y(d[scattery.field]); });
+}
+
 d3.select(self.frameElement).style("height", height + "px");
 </script>
-	
+
+<div id="histopicker" style="padding-left:10px;position:absolute;width:350px;font-size:12px;top:350px;left:960px;">
+	<div style="float:left; width:50%;">
+	<div class="selection" onClick="changeHistoField('UH25','same')">2 - 5km Updraft Helicity</div>
+	<div class="selection" onClick="changeHistoField('UH03','same')">0 - 3km Updraft Helicity</div>
+	<div class="selection" onClick="changeHistoField('GRPL','same')">Col. Int Graupel</div>
+	<div class="selection" onClick="changeHistoField('WSPD','same')">Max 10-m Wind Speed</div>
+	<div class="selection" onClick="changeHistoField('SBCAPE','same')">SBCAPE</div>
+	<div class="selection" onClick="changeHistoField('SHR6','same')">0 - 6km Shear</div>
+	<div class="selection" onClick="changeHistoField('SHR1','same')">0 - 1km Shear</div>
+	</div>
+	<div style="float:left; width:50%;">
+	<div class="selection" onClick="changeHistoField('same','UH25')">2 - 5km Updraft Helicity</div>
+	<div class="selection" onClick="changeHistoField('same','UH03')">0 - 3km Updraft Helicity</div>
+	<div class="selection" onClick="changeHistoField('same','GRPL')">Col. Int Graupel</div>
+	<div class="selection" onClick="changeHistoField('same','WSPD')">Max 10-m Wind Speed</div>
+	<div class="selection" onClick="changeHistoField('same','SBCAPE')">SBCAPE</div>
+	<div class="selection" onClick="changeHistoField('same','UP')">Max Updraft</div>
+	<div class="selection" onClick="changeHistoField('same','DN')">Max Downdraft</div>
+	</div>
+</div>
+
 <div style="clear:both;" id="buttondiv">
 Storm Filters:
-<input type="button" onClick="showAll()" value="Reset" />
+<input type="button" onClick="showAll();resetMap()" value="Reset" />
 <input type="button" onClick="filterObjects('UP_HELI_MAX_max', 50)" value="UH >= 50" />
 <input type="button" onClick="filterObjects('UP_HELI_MAX_max', 100)" value="UH >= 100" />
 <input type="button" onClick="filterObjects('UP_HELI_MAX_max', 150)" value="UH >= 150" />
 <input type="button" onClick="filterByHour(13,36)" value="Day 1" />
 <input type="button" onClick="filterByHour(37,48)" value="Day 2" />
+<input type="button" onClick="changeHistoField('UH25','UH03')" value="UH25/UH03" />
 <input type="button" onClick="filterObjects('Duration', 6)" value="Long Tracks" title="Tracks >= 6hr"/><br/>
 Color Filters:
 <input type="button" onClick="changeColor('Duration')" value="Duration" />
