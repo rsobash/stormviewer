@@ -64,7 +64,8 @@ var histosvg = d3.select("div#svgcontainer").append("svg")
 		 .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var all_fields = { 'SBCAPE':    { 'field':'CAPE_SFC-potential_mean', 'label':'SBCAPE', 'domain':[0,5000] },
+var all_fields = { 'SBCAPE':    { 'field':'CAPE_SFC-potential_mean', 'label':'SBCAPE (J/kg)', 'domain':[0,5000] },
+				   'SBCIN':    { 'field':'CIN_SFC-potential_mean', 'label':'SBCIN (J/kg)', 'domain':[-600,0] },
 				   'SHR6':      { 'field':'SHR6-potential_mean',     'label':'0 - 6 km Shear (kts)', 'domain':[0,100] },
 				   'SHR1':      { 'field':'SHR1-potential_mean',     'label':'0 - 1 km Shear (kts)', 'domain':[0,100] },
 				   'UH25':      { 'field':'UP_HELI_MAX_max', 'label':'2 - 5 km UH (m2/s2)', 'domain':[0,500] },
@@ -77,6 +78,10 @@ var all_fields = { 'SBCAPE':    { 'field':'CAPE_SFC-potential_mean', 'label':'SB
 				   'GRPL':      { 'field':'GRPL_MAX_max', 'label':'Col. Int. Graupel (mm)', 'domain':[6,70] },
 				   'AREA':      { 'field':'area', 'label':'Object Area', 'domain':[5,50] },
 				   'DURATION':  { 'field':'Duration', 'label':'Track Duration', 'domain':[0,10] },
+				   'HAIL':      { 'field':'HAIL_MAXK1_max', 'label':'Thompson Hail (in)', 'domain':[0,4] },
+				   'LCL':      { 'field':'LCL_HEIGHT-potential_mean', 'label':'SBLCL Height (m)', 'domain':[0,4000] },
+				   'SRH1':      { 'field':'SRH1-potential_mean', 'label':'0 - 1km SRH (m2/s2)', 'domain':[0,600] },
+				   'SRH3':      { 'field':'SRH3-potential_mean', 'label':'0 - 3km SRH (m2/s2)', 'domain':[0,600] },
 				 }
 
 var scatterx = all_fields['UH25'];
@@ -218,6 +223,8 @@ for (var mem=1; mem<=10; mem++) {
           data[num]['WSPD10MAX_max'] = 1.944*data[num]['WSPD10MAX_max'];
           data[num]['SHR6-potential_mean'] = 1.944*Math.sqrt( Math.pow(data[num]['UBSHR6-potential_mean'],2) + Math.pow(data[num]['VBSHR6-potential_mean'],2) );
           data[num]['SHR1-potential_mean'] = 1.944*Math.sqrt( Math.pow(data[num]['UBSHR1-potential_mean'],2) + Math.pow(data[num]['VBSHR1-potential_mean'],2) );
+          
+          data[num]['HAIL_MAXK1_max'] = 1000*data[num]['HAIL_MAXK1_max']/25.4;
 
           // FORECAST HOUR ROLLOVERS
           var fhrrollover = $("div#"+fhr+".rollover")
@@ -453,9 +460,13 @@ function moveDot() {
     }
 }
 
-function changeHistoField(new_x, new_y) {
-	if (new_x != "same") scatterx = all_fields[new_x];
-	if (new_y != "same") scattery = all_fields[new_y];
+var update_axis = "x";
+function changeHistoField(new_field) {
+	if (update_axis == "x") scatterx = all_fields[new_field];
+	if (update_axis == "y") scattery = all_fields[new_field];
+	
+	//if (new_x != "same") scatterx = all_fields[new_x];
+	//if (new_y != "same") scattery = all_fields[new_y];
 	
 	x.domain(scatterx.domain);
     y.domain(scattery.domain);
@@ -468,6 +479,9 @@ function changeHistoField(new_x, new_y) {
     histodotbox.selectAll(".scatter")
         .attr("cx", function(d) { return x(d[scatterx.field]); })
         .attr("cy", function(d) { return y(d[scattery.field]); });
+        
+    if (update_axis == "x") update_axis = "y";
+    else if (update_axis == "y") update_axis = "x";
 }
 
 d3.select(self.frameElement).style("height", height + "px");
@@ -475,22 +489,21 @@ d3.select(self.frameElement).style("height", height + "px");
 
 <div id="histopicker" style="padding-left:10px;position:absolute;width:350px;font-size:12px;top:350px;left:960px;">
 	<div style="float:left; width:50%;">
-	<div class="selection" onClick="changeHistoField('UH25','same')">2 - 5km Updraft Helicity</div>
-	<div class="selection" onClick="changeHistoField('UH03','same')">0 - 3km Updraft Helicity</div>
-	<div class="selection" onClick="changeHistoField('GRPL','same')">Col. Int Graupel</div>
-	<div class="selection" onClick="changeHistoField('WSPD','same')">Max 10-m Wind Speed</div>
-	<div class="selection" onClick="changeHistoField('SBCAPE','same')">SBCAPE</div>
-	<div class="selection" onClick="changeHistoField('SHR6','same')">0 - 6km Shear</div>
-	<div class="selection" onClick="changeHistoField('SHR1','same')">0 - 1km Shear</div>
+	<div class="selection" onClick="changeHistoField('UH25')">2 - 5km Updraft Helicity</div>
+	<div class="selection" onClick="changeHistoField('UH03')">0 - 3km Updraft Helicity</div>
+	<div class="selection" onClick="changeHistoField('GRPL')">Col. Int Graupel</div>
+	<div class="selection" onClick="changeHistoField('WSPD')">Max 10-m Wind Speed</div>
+	<div class="selection" onClick="changeHistoField('UP')">Max Updraft</div>
+	<div class="selection" onClick="changeHistoField('DN')">Max Downdraft</div>
+	<div class="selection" onClick="changeHistoField('HAIL')">Thomp. Hail</div>
 	</div>
 	<div style="float:left; width:50%;">
-	<div class="selection" onClick="changeHistoField('same','UH25')">2 - 5km Updraft Helicity</div>
-	<div class="selection" onClick="changeHistoField('same','UH03')">0 - 3km Updraft Helicity</div>
-	<div class="selection" onClick="changeHistoField('same','GRPL')">Col. Int Graupel</div>
-	<div class="selection" onClick="changeHistoField('same','WSPD')">Max 10-m Wind Speed</div>
-	<div class="selection" onClick="changeHistoField('same','SBCAPE')">SBCAPE</div>
-	<div class="selection" onClick="changeHistoField('same','UP')">Max Updraft</div>
-	<div class="selection" onClick="changeHistoField('same','DN')">Max Downdraft</div>
+	<div class="selection" onClick="changeHistoField('SBCAPE')">SBCAPE</div>
+	<div class="selection" onClick="changeHistoField('SBCIN')">SBCIN</div>
+	<div class="selection" onClick="changeHistoField('SHR6')">0 - 6km Shear</div>
+	<div class="selection" onClick="changeHistoField('SHR1')">0 - 1km Shear</div>
+	<div class="selection" onClick="changeHistoField('LCL')">SBLCL Height</div>
+	<div class="selection" onClick="changeHistoField('SRH3')">0 - 3km SRH</div>
 	</div>
 </div>
 
