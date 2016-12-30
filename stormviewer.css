@@ -115,9 +115,6 @@ div#maincontainer {
 	padding: 0px;
 	text-align: left; /** to fix IE centering **/
 }
-div#svgcontainer {
-	float: left;
-}
 
 .axis path,
 .axis line {

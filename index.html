@@ -22,7 +22,35 @@
 <div class="rollover member" id="m1">Mem 1</div><div class="rollover member" id="m2">Mem 2</div><div class="rollover member" id="m3">Mem 3</div><div class="rollover member" id="m4">Mem 4</div><div class="rollover member" id="m5">Mem 5</div><div class="rollover member" id="m6">Mem 6</div><div class="rollover member" id="m7">Mem 7</div><div class="rollover member" id="m8">Mem 8</div><div class="rollover member" id="m9">Mem 9</div><div class="rollover member" id="m10">Mem 10</div>
 </div>
 
-<div id="svgcontainer"></div>
+<div id="svgcontainer">
+
+<div id="mapcontainer" style="width:850px;float:left;"></div>
+
+<div id="rightcontainer" style="width:435px;float:left;">
+  <div id="histocontainer"></div>
+  <div id="histopicker" style="padding-left:25px;font-size:12px;width:100%;">
+        <div style="float:left;width:175px;">
+        <div class="selection" onClick="changeHistoField('UH25')">2 - 5km Updraft Helicity</div>
+        <div class="selection" onClick="changeHistoField('UH03')">0 - 3km Updraft Helicity</div>
+        <div class="selection" onClick="changeHistoField('GRPL')">Col. Int Graupel</div>
+        <div class="selection" onClick="changeHistoField('WSPD')">Max 10-m Wind Speed</div>
+        <div class="selection" onClick="changeHistoField('UP')">Max Updraft</div>
+        <div class="selection" onClick="changeHistoField('DN')">Max Downdraft</div>
+        <div class="selection" onClick="changeHistoField('HAIL')">Thomp. Hail</div>
+        </div>
+        <div style="float:left;width:175px;">
+        <div class="selection" onClick="changeHistoField('SBCAPE')">SBCAPE</div>
+        <div class="selection" onClick="changeHistoField('SBCIN')">SBCIN</div>
+        <div class="selection" onClick="changeHistoField('SHR6')">0 - 6km Shear</div>
+        <div class="selection" onClick="changeHistoField('SHR1')">0 - 1km Shear</div>
+        <div class="selection" onClick="changeHistoField('LCL')">SBLCL Height</div>
+        <div class="selection" onClick="changeHistoField('SRH3')">0 - 3km SRH</div>
+        </div>
+  <br style="clear:both;"/>
+  </div>
+</div>
+
+</div>
 
 <script>
 var width = 850,
@@ -45,7 +73,7 @@ var zoom = d3.behavior.zoom()
 var path = d3.geo.path()
     .projection(projection);
 
-var svg = d3.select("div#svgcontainer").append("svg")
+var svg = d3.select("div#mapcontainer").append("svg")
     .attr("width", width)
     .attr("height", height)
     .attr("class", "mapsvg");
@@ -57,7 +85,7 @@ var margin = {top: 15, right: 20, bottom: 30, left: 40};
 var histo_width = 350 - margin.left - margin.right;
 var histo_height = 300 - margin.top - margin.bottom;
 
-var histosvg = d3.select("div#svgcontainer").append("svg")
+var histosvg = d3.select("div#histocontainer").append("svg")
 		.attr("width", histo_width + margin.left + margin.right)
 		.attr("height", histo_height + margin.top + margin.bottom)
 		.attr("class", "histosvg")
@@ -471,9 +499,9 @@ function changeHistoField(new_field) {
 	x.domain(scatterx.domain);
     y.domain(scattery.domain);
     
-    histosvg.selectAll("g.x.axis").transition().duration(200).call(xAxis)
+    histosvg.selectAll("g.x.axis").transition().duration(500).call(xAxis)
     histosvg.selectAll("g.x.axis text.label").text(scatterx.label);
-    histosvg.selectAll("g.y.axis").transition().duration(200).call(yAxis);
+    histosvg.selectAll("g.y.axis").transition().duration(500).call(yAxis);
     histosvg.selectAll("g.y.axis text.label").text(scattery.label);
 	
     histodotbox.selectAll(".scatter")
@@ -487,6 +515,7 @@ function changeHistoField(new_field) {
 d3.select(self.frameElement).style("height", height + "px");
 </script>
 
+<!--
 <div id="histopicker" style="padding-left:10px;position:absolute;width:350px;font-size:12px;top:350px;left:960px;">
 	<div style="float:left; width:50%;">
 	<div class="selection" onClick="changeHistoField('UH25')">2 - 5km Updraft Helicity</div>
@@ -506,8 +535,9 @@ d3.select(self.frameElement).style("height", height + "px");
 	<div class="selection" onClick="changeHistoField('SRH3')">0 - 3km SRH</div>
 	</div>
 </div>
+-->
 
-<div style="clear:both;" id="buttondiv">
+<div style="clear:both;padding-left:65px;" id="buttondiv">
 Storm Filters:
 <input type="button" onClick="showAll();resetMap()" value="Reset" />
 <input type="button" onClick="filterObjects('UP_HELI_MAX_max', 50)" value="UH >= 50" />
