@@ -130,7 +130,16 @@ histosvg.append("rect").attr("x", 0)
         .attr("height", histo_height)
         .attr("class", "histobg");
         
-var histodotbox = histosvg.append("g");
+histosvg.append("clipPath")
+		.attr("id", "histo-area")
+		.append("rect")
+		.attr("x", 0)
+    	.attr("y", 0)
+        .attr("width", histo_width)
+        .attr("height", histo_height);
+    
+// add clipping path so dots don't go outside of histogram area
+var histodotbox = histosvg.append("g").attr("clip-path", "url(#histo-area)");
 
 histosvg.append("g").attr("class", "x axis").call(xAxis)
       .attr("transform", "translate(0,"+histo_height+")")
