@@ -29,8 +29,8 @@
 <div id="rightcontainer" style="width:435px;float:left;">
   <div id="histocontainer"></div>
   <div id="histopicker" style="padding-left:25px;font-size:12px;width:100%;">
-  <span style="font-weight: bold;">Scatterplot Fields</span><br/>
-        <div style="float:left;width:175px;">
+  <span style="font-weight: bold;">Scatterplot Fields --- </span><span id="selectaxis" style="color:red;">select x-axis</span><br/>
+        <div style="float:left;width:175px;padding-left:10px;">
         <div class="selection" onClick="changeHistoField('UH25')">2 - 5km Updraft Helicity</div>
         <div class="selection" onClick="changeHistoField('UH03')">0 - 3km Updraft Helicity</div>
         <div class="selection" onClick="changeHistoField('GRPL')">Col. Int Graupel</div>
@@ -46,17 +46,23 @@
         <div class="selection" onClick="changeHistoField('SHR1')">0 - 1km Shear</div>
         <div class="selection" onClick="changeHistoField('LCL')">SBLCL Height</div>
         <div class="selection" onClick="changeHistoField('SRH3')">0 - 3km SRH</div>
+        <div class="selection" onClick="changeHistoField('RVORT')">1km Vorticity</div>
         </div>
 
 		<div style="clear:both;padding-top:10px;" id="buttondiv">
 <span style="font-weight: bold;">Storm Filters</span><br/>
-<input type="button" onClick="showAll();resetMap()" value="Show All" />
+<input type="button" onClick="showAll();resetMap()" value="Reset" />
 <input type="button" onClick="filterObjects('UP_HELI_MAX_max', 75)" value="UH >= 75" />
 <input type="button" onClick="filterObjects('UP_HELI_MAX_max', 150)" value="UH >= 150" />
-<input type="button" onClick="filterByHour(13,36)" value="Day 1" />
+<input type="button" onClick="filterObjects('WSPD10MAX_max', 50)" value="WSPD >= 50kts" />
+<input type="button" onClick="filterObjects('HAIL_MAXK1_max', 1)" value='HAIL >= 1"' />
+<input type="button" onClick="filterObjects('HAIL_MAXK1_max', 2)" value='HAIL >= 2"' />
+<input type="button" onClick="filterObjects('RVORT1_MAX_max', 13)" value='RVORT >= 0.013s-1' />
+<br/><input type="button" onClick="filterByHour(13,36)" value="Day 1" />
 <input type="button" onClick="filterByHour(37,48)" value="Day 2" />
-<input type="button" onClick="filterObjects('Duration', 6)" value="Long Tracks" title="Tracks >= 6hr"/><br/><br/>
+<input type="button" onClick="filterObjects('Duration', 6)" value="Tracks >= 6hr"/><br/><br/>
 <span style="font-weight: bold;">Color Filters</span><br/>
+<input type="button" onClick="resetColor()" value="Reset" />
 <input type="button" onClick="changeColor('Duration')" value="Duration" />
 <input type="button" onClick="changeColor('Member')" value="Member" />
 		</div>
@@ -115,8 +121,8 @@ var all_fields = { 'SBCAPE':    { 'field':'CAPE_SFC-potential_mean', 'label':'SB
 				   'UHMIN':     { 'field':'UP_HELI_MIN_min', 'label':'2 - 5 km Min UH (m2/s2)', 'domain':[-500,0] },
 				   'UP':        { 'field':'W_UP_MAX_max',     'label':'Max Updraft (m/s)', 'domain':[0,60] },
 				   'DN':        { 'field':'W_DN_MAX_max',     'label':'Max Downdraft (m/s)', 'domain':[-10,2] },
-				   'WSPD':      { 'field':'WSPD10MAX_max',     'label':'Max 10m Wind Speed (m/s)', 'domain':[0,80] },
-				   'RVORT':     { 'field':'RVORT1_MAX_max',     'label':'Max 1km Rel. Vort (s-1)', 'domain':[0,0.03] },
+				   'WSPD':      { 'field':'WSPD10MAX_max',     'label':'Max 10m Wind Speed (kts)', 'domain':[0,80] },
+				   'RVORT':     { 'field':'RVORT1_MAX_max',     'label':'Max 1km Rel. Vort (10^3 s-1)', 'domain':[0,30] },
 				   'GRPL':      { 'field':'GRPL_MAX_max', 'label':'Col. Int. Graupel (mm)', 'domain':[6,70] },
 				   'AREA':      { 'field':'area', 'label':'Object Area', 'domain':[5,50] },
 				   'DURATION':  { 'field':'Duration', 'label':'Track Duration', 'domain':[0,10] },
@@ -276,7 +282,7 @@ for (var mem=1; mem<=10; mem++) {
           data[num]['WSPD10MAX_max'] = 1.944*data[num]['WSPD10MAX_max'];
           data[num]['SHR6-potential_mean'] = 1.944*Math.sqrt( Math.pow(data[num]['UBSHR6-potential_mean'],2) + Math.pow(data[num]['VBSHR6-potential_mean'],2) );
           data[num]['SHR1-potential_mean'] = 1.944*Math.sqrt( Math.pow(data[num]['UBSHR1-potential_mean'],2) + Math.pow(data[num]['VBSHR1-potential_mean'],2) );
-          
+          data[num]['RVORT1_MAX_max'] = 1000*data[num]['RVORT1_MAX_max'];    
           data[num]['HAIL_MAXK1_max'] = 1000*data[num]['HAIL_MAXK1_max']/25.4;
 
           // FORECAST HOUR ROLLOVERS
@@ -426,7 +432,7 @@ function showAll() {
 }
 
 function filterObjects(field, thresh) {
-	all_circles.classed("filtered", function(d) { return (d[field] < thresh) });
+        all_circles.classed("filtered", function(d) { return (d[field] < thresh) });
 	updateCounts();
 }
 
@@ -438,6 +444,9 @@ function filterByHour(shr, ehr) {
 function changeColor(field) {
 	var color = d3.scale.category20b();
 	all_circles.style("fill", function(d) { return color(d[field]); });
+}
+function resetColor() {
+	all_circles.style("fill", function(d){ if (d3.select(this).classed("scatter")) return "gray"; else return "black"; });
 }
 
 // update available circles to be selected
@@ -559,8 +568,8 @@ function changeHistoField(new_field) {
         .attr("cx", function(d) { return x(d[scatterx.field]); })
         .attr("cy", function(d) { return y(d[scattery.field]); });
         
-    if (update_axis == "x") update_axis = "y";
-    else if (update_axis == "y") update_axis = "x";
+    if (update_axis == "x") { update_axis = "y"; d3.select("div#rightcontainer span#selectaxis").text("select y-axis"); }
+    else if (update_axis == "y") { update_axis = "x"; d3.select("div#rightcontainer span#selectaxis").text("select x-axis"); }
 }
 
 d3.select(self.frameElement).style("height", height + "px");

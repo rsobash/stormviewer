@@ -129,4 +129,4 @@ text.numobjects { font-size: 13px; font-weight: bold; text-anchor: end; }
 line.horizontalGrid { fill: none; stroke: gray; stroke-width: 1.0px; opacity: 0.5; }
 
 div.selection { padding: 3px; cursor: pointer; }
-div.selection:hover { background-color: #DFDFDF; font-weight: bold; }
+div.selection:hover { font-weight: bold; }
