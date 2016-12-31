@@ -29,6 +29,7 @@
 <div id="rightcontainer" style="width:435px;float:left;">
   <div id="histocontainer"></div>
   <div id="histopicker" style="padding-left:25px;font-size:12px;width:100%;">
+  <span style="font-weight: bold;">Scatterplot Fields</span><br/>
         <div style="float:left;width:175px;">
         <div class="selection" onClick="changeHistoField('UH25')">2 - 5km Updraft Helicity</div>
         <div class="selection" onClick="changeHistoField('UH03')">0 - 3km Updraft Helicity</div>
@@ -46,21 +47,34 @@
         <div class="selection" onClick="changeHistoField('LCL')">SBLCL Height</div>
         <div class="selection" onClick="changeHistoField('SRH3')">0 - 3km SRH</div>
         </div>
-  <br style="clear:both;"/>
-  </div>
+
+		<div style="clear:both;padding-top:10px;" id="buttondiv">
+<span style="font-weight: bold;">Storm Filters</span><br/>
+<input type="button" onClick="showAll();resetMap()" value="Show All" />
+<input type="button" onClick="filterObjects('UP_HELI_MAX_max', 75)" value="UH >= 75" />
+<input type="button" onClick="filterObjects('UP_HELI_MAX_max', 150)" value="UH >= 150" />
+<input type="button" onClick="filterByHour(13,36)" value="Day 1" />
+<input type="button" onClick="filterByHour(37,48)" value="Day 2" />
+<input type="button" onClick="filterObjects('Duration', 6)" value="Long Tracks" title="Tracks >= 6hr"/><br/><br/>
+<span style="font-weight: bold;">Color Filters</span><br/>
+<input type="button" onClick="changeColor('Duration')" value="Duration" />
+<input type="button" onClick="changeColor('Member')" value="Member" />
+		</div>
+
+</div>
 </div>
 
 </div>
 
 <script>
 var width = 850,
-    height = 600;
+    height = 650;
 
 var projection = d3.geo.conicConformal()
     .rotate([98, 0, 2.4])
     .center([-1, 39])
     .parallels([32.0, 46.0])
-    .scale(1100)
+    .scale(1150)
     .translate([width / 2, height / 2])
     .precision(.1);
 
@@ -217,6 +231,7 @@ d3.json("us.json", function(error, us) {
       .attr("class", "state-boundary")
       .attr("d", path);
 
+/*
   var colorprobs = d3.scale.linear().domain([0,20,60]).range(["#cccccc", "#aaaaaa", "red"]);
 
   var num_tiles_loaded = 0;
@@ -237,6 +252,7 @@ usaFeatureCollection['features'].push({"type":"Feature", "geometry": {"type":"Po
         	}
 		});
 });
+*/
 
 var color = d3.scale.category20b();
 var files_loaded = 0;
@@ -274,7 +290,7 @@ for (var mem=1; mem<=10; mem++) {
 
                   all_circles.classed("hidden", true);
                   all_circles_fhr[fhr].classed("hidden", false);
-                        
+                
                   textbox.text(count_by_fhr[fhr]+" objects");
              });
           }
@@ -338,7 +354,6 @@ for (var mem=1; mem<=10; mem++) {
          	.attr("cx", 0)
          	.attr("cy", 0);
  
-         //var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["#eff3ff", "#3182bd"]);
          var colormem = d3.scale.linear().domain(d3.extent(count_by_mem)).range(["white", "#A67B5B"]);
          var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["white", "#A67B5B"]);
          
@@ -406,15 +421,18 @@ function showAll() {
 		 		
 	textbox.text(num_objects+" objects");
 	$("div.rollover").removeClass("selected");
-	resetMap()
+	resetMap();
+	updateCounts();
 }
 
 function filterObjects(field, thresh) {
 	all_circles.classed("filtered", function(d) { return (d[field] < thresh) });
+	updateCounts();
 }
 
 function filterByHour(shr, ehr) {
     all_circles.classed("filtered", function(d) { return ((d['Forecast_Hour'] < shr) || (d['Forecast_Hour'] > ehr)) });
+    updateCounts();
 }
 
 function changeColor(field) {
@@ -425,6 +443,31 @@ function changeColor(field) {
 // update available circles to be selected
 function selectActiveCircles() {
 	active_circles = all_circles.filter(function() { return (!d3.select(this).classed("filtered") && !d3.select(this).classed("hidden")); });
+}
+
+function updateCounts() {
+	// reset these arrays to zero;
+	for (var i = 0; i < 49; i++) count_by_fhr[i] = 0;
+	for (var i = 0; i < 10; i++) count_by_mem[i] = 0;
+	
+	// count objects that aren't filtered (only map objects, don't want to count twice)
+    all_circles.filter(function() { return (!d3.select(this).classed("filtered") & !d3.select(this).classed("scatter")); })
+    	.each(function(d) {
+			var member = d['Member'];
+			var fhr    = parseInt(d['Forecast_Hour'], 10);
+		
+			count_by_fhr[fhr] += 1;
+        	count_by_mem[member-1] += 1;
+	});
+	
+	num_objects = d3.sum(count_by_fhr);
+	textbox.text(num_objects+" objects");
+	
+	// reset color of rollovers
+	var colormem = d3.scale.linear().domain(d3.extent(count_by_mem)).range(["white", "#A67B5B"]);
+    var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["white", "#A67B5B"]);
+    for (var f=0; f<49; f++) $("div.rollover#"+f).css("background-color", colorfhr(count_by_fhr[f]));
+	for (var f=1; f<11; f++) $("div.rollover#m"+f).css("background-color", colormem(count_by_mem[f-1]));
 }
 
 function moveDotHisto() {
@@ -504,9 +547,6 @@ function changeHistoField(new_field) {
 	if (update_axis == "x") scatterx = all_fields[new_field];
 	if (update_axis == "y") scattery = all_fields[new_field];
 	
-	//if (new_x != "same") scatterx = all_fields[new_x];
-	//if (new_y != "same") scattery = all_fields[new_y];
-	
 	x.domain(scatterx.domain);
     y.domain(scattery.domain);
     
@@ -526,23 +566,8 @@ function changeHistoField(new_field) {
 d3.select(self.frameElement).style("height", height + "px");
 </script>
 
-<div style="clear:both;padding-left:65px;" id="buttondiv">
-Storm Filters:
-<input type="button" onClick="showAll();resetMap()" value="Reset" />
-<input type="button" onClick="filterObjects('UP_HELI_MAX_max', 75)" value="UH >= 75" />
-<input type="button" onClick="filterObjects('UP_HELI_MAX_max', 150)" value="UH >= 150" />
-<input type="button" onClick="filterByHour(13,36)" value="Day 1" />
-<input type="button" onClick="filterByHour(37,48)" value="Day 2" />
-<input type="button" onClick="changeHistoField('UH25','UH03')" value="UH25/UH03" />
-<input type="button" onClick="filterObjects('Duration', 6)" value="Long Tracks" title="Tracks >= 6hr"/><br/>
-Color Filters:
-<input type="button" onClick="changeColor('Duration')" value="Duration" />
-<input type="button" onClick="changeColor('Member')" value="Member" />
-
-
-<div style="clear:both; font-size:11px; color: #AFAFAF;">Storm Viewer V1.0 -- storms identified using minimum column graupel threshold of 0.25 in.<br/>Experimental interface - design subject to change</div>
+<div style="clear:both;font-size:12px; color: #AFAFAF;padding:10px 0px 0px 65px;">Storms identified using column graupel > 0.25 in. --- Experimental interface, design subject to change</div>
 </div>
 
-</div>
 </body>
 </html>
