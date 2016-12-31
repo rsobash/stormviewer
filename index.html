@@ -141,7 +141,7 @@ histosvg.append("clipPath")
 // add clipping path so dots don't go outside of histogram area
 var histodotbox = histosvg.append("g").attr("clip-path", "url(#histo-area)");
 
-histosvg.append("g").attr("class", "x axis").call(xAxis)
+histosvg.append("g").attr("class", "x axis hidden").call(xAxis)
       .attr("transform", "translate(0,"+histo_height+")")
     .append("text")
       .attr("class", "label")
@@ -150,7 +150,7 @@ histosvg.append("g").attr("class", "x axis").call(xAxis)
       .style("text-anchor", "end")
       .text(scatterx.label);
       
-histosvg.append("g").attr("class", "y axis").call(yAxis)
+histosvg.append("g").attr("class", "y axis hidden").call(yAxis)
     .append("text")
       .attr("class", "label")
       .attr("transform", "rotate(0)")
@@ -339,8 +339,8 @@ for (var mem=1; mem<=10; mem++) {
          	.attr("cy", 0);
  
          //var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["#eff3ff", "#3182bd"]);
-         var colormem = d3.scale.linear().domain(d3.extent(count_by_mem)).range(["white", "gray"]);
-         var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["white", "gray"]);
+         var colormem = d3.scale.linear().domain(d3.extent(count_by_mem)).range(["white", "#A67B5B"]);
+         var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["white", "#A67B5B"]);
          
          num_objects = d3.sum(count_by_fhr);
          for (var f=0; f<49; f++) {
@@ -366,7 +366,9 @@ for (var mem=1; mem<=10; mem++) {
 		 				dotbox.select("text.loadingBar").classed("hidden", true); 
 		 				all_circles.classed("hidden", false);
 		 				//d3.selectAll("path.gridbox").classed("hidden", false);
-		 				histosvg.selectAll("text.label").classed("hidden", false);
+		 				histosvg.selectAll(".axis").classed("hidden", false);
+		 				histosvg.selectAll(".axis text").classed("hidden", false);
+
 		 		});
 		 
 		 textbox = histosvg.append("text")
@@ -524,33 +526,10 @@ function changeHistoField(new_field) {
 d3.select(self.frameElement).style("height", height + "px");
 </script>
 
-<!--
-<div id="histopicker" style="padding-left:10px;position:absolute;width:350px;font-size:12px;top:350px;left:960px;">
-	<div style="float:left; width:50%;">
-	<div class="selection" onClick="changeHistoField('UH25')">2 - 5km Updraft Helicity</div>
-	<div class="selection" onClick="changeHistoField('UH03')">0 - 3km Updraft Helicity</div>
-	<div class="selection" onClick="changeHistoField('GRPL')">Col. Int Graupel</div>
-	<div class="selection" onClick="changeHistoField('WSPD')">Max 10-m Wind Speed</div>
-	<div class="selection" onClick="changeHistoField('UP')">Max Updraft</div>
-	<div class="selection" onClick="changeHistoField('DN')">Max Downdraft</div>
-	<div class="selection" onClick="changeHistoField('HAIL')">Thomp. Hail</div>
-	</div>
-	<div style="float:left; width:50%;">
-	<div class="selection" onClick="changeHistoField('SBCAPE')">SBCAPE</div>
-	<div class="selection" onClick="changeHistoField('SBCIN')">SBCIN</div>
-	<div class="selection" onClick="changeHistoField('SHR6')">0 - 6km Shear</div>
-	<div class="selection" onClick="changeHistoField('SHR1')">0 - 1km Shear</div>
-	<div class="selection" onClick="changeHistoField('LCL')">SBLCL Height</div>
-	<div class="selection" onClick="changeHistoField('SRH3')">0 - 3km SRH</div>
-	</div>
-</div>
--->
-
 <div style="clear:both;padding-left:65px;" id="buttondiv">
 Storm Filters:
 <input type="button" onClick="showAll();resetMap()" value="Reset" />
-<input type="button" onClick="filterObjects('UP_HELI_MAX_max', 50)" value="UH >= 50" />
-<input type="button" onClick="filterObjects('UP_HELI_MAX_max', 100)" value="UH >= 100" />
+<input type="button" onClick="filterObjects('UP_HELI_MAX_max', 75)" value="UH >= 75" />
 <input type="button" onClick="filterObjects('UP_HELI_MAX_max', 150)" value="UH >= 150" />
 <input type="button" onClick="filterByHour(13,36)" value="Day 1" />
 <input type="button" onClick="filterByHour(37,48)" value="Day 2" />
