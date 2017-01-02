@@ -38,6 +38,7 @@
         <div class="selection" onClick="changeHistoField('UP')">Max Updraft</div>
         <div class="selection" onClick="changeHistoField('DN')">Max Downdraft</div>
         <div class="selection" onClick="changeHistoField('HAIL')">Thomp. Hail</div>
+        <div class="selection" onClick="changeHistoField('FHR')">Forecast Hour</div>
         </div>
         <div style="float:left;width:175px;">
         <div class="selection" onClick="changeHistoField('SBCAPE')">SBCAPE</div>
@@ -130,6 +131,7 @@ var all_fields = { 'SBCAPE':    { 'field':'CAPE_SFC-potential_mean', 'label':'SB
 				   'LCL':      { 'field':'LCL_HEIGHT-potential_mean', 'label':'SBLCL Height (m)', 'domain':[0,4000] },
 				   'SRH1':      { 'field':'SRH1-potential_mean', 'label':'0 - 1km SRH (m2/s2)', 'domain':[0,600] },
 				   'SRH3':      { 'field':'SRH3-potential_mean', 'label':'0 - 3km SRH (m2/s2)', 'domain':[0,600] },
+				   'FHR':      { 'field':'Forecast_Hour', 'label':'Forecast Hour', 'domain':[0,48] },
 				 }
 
 var scatterx = all_fields['UH25'];
