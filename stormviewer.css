@@ -85,6 +85,7 @@ div.rollover {
 	margin: 0px 0px 0px 0px;
 	float: left;
 	color: #EFEFEF;
+	color: #000;
 	cursor: default;
 }
 div.rollover.loaded {

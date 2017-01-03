@@ -48,6 +48,7 @@
         <div class="selection" onClick="changeHistoField('LCL')">SBLCL Height</div>
         <div class="selection" onClick="changeHistoField('SRH3')">0 - 3km SRH</div>
         <div class="selection" onClick="changeHistoField('RVORT')">1km Vorticity</div>
+        <div class="selection" onClick="changeHistoField('MEM')">Member</div>
         </div>
 
 		<div style="clear:both;padding-top:10px;" id="buttondiv">
@@ -132,6 +133,7 @@ var all_fields = { 'SBCAPE':    { 'field':'CAPE_SFC-potential_mean', 'label':'SB
 				   'SRH1':      { 'field':'SRH1-potential_mean', 'label':'0 - 1km SRH (m2/s2)', 'domain':[0,600] },
 				   'SRH3':      { 'field':'SRH3-potential_mean', 'label':'0 - 3km SRH (m2/s2)', 'domain':[0,600] },
 				   'FHR':      { 'field':'Forecast_Hour', 'label':'Forecast Hour', 'domain':[0,48] },
+				   'MEM':      { 'field':'Member', 'label':'Member', 'domain':[1,10] },
 				 }
 
 var scatterx = all_fields['UH25'];
@@ -359,14 +361,13 @@ function whenloaded() {
 	for (var f=0; f<49; f++) {
 		if (count_by_fhr[f] < 1) continue
 		$("div.rollover#"+f).css("background-color", colorfhr(count_by_fhr[f]))
-				.addClass("loaded");
+				//.addClass("loaded");
 		all_circles_fhr[f] = d3.selectAll("circle.fhr"+f);
 	}
 	for (var f=1; f<11; f++) {
 		 if (count_by_mem[f-1] < 1) continue
-		 $("div.rollover#m"+f)
-		 		.css("background-color", colormem(count_by_mem[f-1]))
-		 		.addClass("loaded");
+		 $("div.rollover#m"+f).css("background-color", colormem(count_by_mem[f-1]))
+		 		//.addClass("loaded");
 		 all_circles_mem[f-1] = d3.selectAll("circle.mem"+f);
 	}
 	 
