@@ -84,13 +84,15 @@ div.rollover {
 	padding: 10px 5px 10px 5px;
 	margin: 0px 0px 0px 0px;
 	float: left;
-	color: #EFEFEF;
+	/*color: #EFEFEF;*/
 	color: #000;
 	cursor: default;
 }
+/*
 div.rollover.loaded {
 	color: #000;
 }
+*/
 div.rollover.member {
 	width: 45px;
 	border-left: 2px solid #EFEFEF;
