@@ -244,7 +244,7 @@ d3.json("us.json", function(error, us) {
 
   var files_loaded = 0;
   for (var mem=1; mem<=10; mem++) {
-    d3.csv("track_step_NCAR_mem"+mem+"_20160509.csv", function(error, data) {
+    d3.csv("./data/track_step_NCAR_mem"+mem+"_20160509.csv", function(error, data) {
  
       var member = data[0]['Step_ID'].split('_')[0].substring(3);
       files_loaded += 1;
