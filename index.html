@@ -254,50 +254,19 @@ d3.json("us.json", function(error, us) {
       for (var num=0; num<data.length; num++) {
           var fhr = parseInt(data[num]['Forecast_Hour'], 10);
           count_by_fhr[fhr] += 1
-          count_by_mem[member-1] += 1
-          
+          count_by_mem[member-1] += 1          
+
           var id = data[num]['Step_ID'].split('_')
-          data[num]['Duration'] = (id[5] - id[4]);
-          data[num]['Member'] = member;
-          data[num]['WSPD10MAX_max'] = 1.944*data[num]['WSPD10MAX_max'];
+          data[num]['Duration']            = (id[5] - id[4]);
+          data[num]['Member']              = member;
+          data[num]['WSPD10MAX_max']       = 1.944*data[num]['WSPD10MAX_max'];
           data[num]['SHR6-potential_mean'] = 1.944*Math.sqrt( Math.pow(data[num]['UBSHR6-potential_mean'],2) + Math.pow(data[num]['VBSHR6-potential_mean'],2) );
           data[num]['SHR1-potential_mean'] = 1.944*Math.sqrt( Math.pow(data[num]['UBSHR1-potential_mean'],2) + Math.pow(data[num]['VBSHR1-potential_mean'],2) );
-          data[num]['RVORT1_MAX_max'] = 1000*data[num]['RVORT1_MAX_max'];    
-          data[num]['HAIL_MAXK1_max'] = 1000*data[num]['HAIL_MAXK1_max']/25.4;
-
-          // FORECAST HOUR ROLLOVERS
-          var fhrrollover = $("div#"+fhr+".rollover")
-          if (!fhrrollover.hasClass("counted")) {
-              fhrrollover.addClass("counted");
-              fhrrollover.mouseover(function() {
-                  var fhr = d3.select(this).attr("id");
-                  d3.selectAll("div.rollover").classed("selected", false);
-                  $("div#"+fhr+".rollover").addClass("selected");
-
-                  all_circles.classed("hidden", true);
-                  all_circles_fhr[fhr].classed("hidden", false);
-                
-                  textbox.text(count_by_fhr[fhr]+" objects");
-             });
-          }
-          
-          // MEMBER ROLLOVERS
-          var memrollover = $("div#m"+member+".rollover")
-          if (!memrollover.hasClass("counted")) { 
-             memrollover.addClass("counted");
-             memrollover.mouseover(function() {
-                  var mem = d3.select(this).attr("id").substring(1);
-                  $("div.rollover").removeClass("selected");
-                  $("div#m"+mem+".rollover").addClass("selected");
-                  
-                  all_circles.classed("hidden", true);
-                  all_circles_mem[mem-1].classed("hidden", false);
-                  textbox.text(count_by_mem[mem-1]+" objects");
-             });
-          }
+          data[num]['RVORT1_MAX_max']      = 1000*data[num]['RVORT1_MAX_max'];    
+          data[num]['HAIL_MAXK1_max']      = 1000*data[num]['HAIL_MAXK1_max']/25.4;
       } // end for loop over objects 
  
-      // PLOT POINTS ON MAP
+      // ### PLOT DOTS ON MAP ###
       mapbox.selectAll(".circle-mem"+member)
           .data(data).enter()
           .append("circle")
@@ -312,22 +281,20 @@ d3.json("us.json", function(error, us) {
           		else return 1; 
           });
      
-      // PLOT DOTS ON SCATTER PLOT
+      // ### PLOT DOTS ON SCATTER PLOT ###
       histodotbox.selectAll("dot")
-        .data(data).enter()
-      .append("circle")
-        .attr("r", 2.5)
-        .attr("id", function(d,i) { return "dot"+member+"-"+i; })
-        .attr("class", function(d) { return "circle mem"+member+" fhr"+parseInt(d['Forecast_Hour'])+" scatter"; })
-        .attr("cx", function(d) { return x(d[scatterx.field]); })
-        .attr("cy", function(d) { return y(d[scattery.field]); });
+          .data(data).enter()
+          .append("circle")
+          .attr("r", 2.5)
+          .attr("id", function(d,i) { return "dot"+member+"-"+i; })
+          .attr("class", function(d) { return "circle mem"+member+" fhr"+parseInt(d['Forecast_Hour'])+" scatter"; })
+          .attr("cx", function(d) { return x(d[scatterx.field]); })
+          .attr("cy", function(d) { return y(d[scattery.field]); });
                
        // execute this code when all the files have loaded
-       if (files_loaded == 10) whenloaded();
-          
+       if (files_loaded == 10) whenloaded();       
      });
-	}
-
+  }
 });
 
 function zoomed() {
@@ -342,7 +309,35 @@ function whenloaded() {
 	all_circles = d3.selectAll("circle");
 	all_circles_fhr = Array(49);
 	all_circles_mem = Array(10);
-         
+
+        count_by_fhr.forEach(function(n,i) { if (n<1) $("div#"+i+".rollover").addClass("zero"); });
+        count_by_mem.forEach(function(n,i) { if (n<1) $("div#m"+(i+1)+".rollover").addClass("zero"); });
+ 
+        // ADD FORECAST HOUR ROLLOVERS
+        $("div.rollover.fhr").mouseover(function() {
+            var fhr = d3.select(this).attr("id");
+            d3.selectAll("div.rollover").classed("selected", false);
+            $("div#"+fhr+".rollover").addClass("selected");
+
+            all_circles.classed("hidden", true);
+            if (count_by_fhr[fhr] > 0) all_circles_fhr[fhr].classed("hidden", false);
+ 
+            textbox.text(count_by_fhr[fhr]+" objects");
+        });
+          
+        // ADD MEMBER ROLLOVERS
+        $("div.rollover.member").mouseover(function() {
+            var mem = d3.select(this).attr("id").substring(1);
+            $("div.rollover").removeClass("selected");
+            $("div#m"+mem+".rollover").addClass("selected");
+                  
+            all_circles.classed("hidden", true);
+            if (count_by_mem[mem-1] > 0) all_circles_mem[mem-1].classed("hidden", false);
+
+            textbox.text(count_by_mem[mem-1]+" objects");
+        });
+
+        // ADD HOVER DOTS 
 	hover = dotbox.append("circle")
          	.attr("r", 6)
          	.attr("class", "hoverdot hidden")
@@ -354,8 +349,8 @@ function whenloaded() {
          	.attr("cx", 0)
          	.attr("cy", 0);
  
-	var colormem = d3.scale.linear().domain(d3.extent(count_by_mem)).range(["white", "#A67B5B"]);
-	var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["white", "#A67B5B"]);
+	var colormem = d3.scale.linear().domain(d3.extent(count_by_mem)).range(["#ede4de", "#A67B5B"]);
+	var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["#ede4de", "#A67B5B"]);
     
 	num_objects = d3.sum(count_by_fhr);
 	for (var f=0; f<49; f++) {
@@ -419,14 +414,20 @@ usaFeatureCollection['features'].push({"type":"Feature", "geometry": {"type":"Po
 */
 }
 
+// these functions below are wrapped in setTimeouts to make sure the button press
+// rendering completes, and then the dot updates are rendered (prevents the button
+// press from momentarily hanging).
 function resetMap() {
-    mapbox.attr("transform", "translate(0,0)scale(1)");
-    dotbox.attr("transform", "translate(0,0)scale(1)");
-    mapbox.select(".state-boundary").style("stroke-width", "0.5px");
-    mapbox.select(".county-boundary").style("stroke-width", "0.5px");
+    setTimeout( function() {
+        mapbox.attr("transform", "translate(0,0)scale(1)");
+        dotbox.attr("transform", "translate(0,0)scale(1)");
+        mapbox.select(".state-boundary").style("stroke-width", "0.5px");
+        mapbox.select(".county-boundary").style("stroke-width", "0.5px");
+    }, 0);
 }
 
 function showAll() {
+    setTimeout( function() {
 	all_circles.classed("hidden", false);
 	all_circles.classed("filtered", false);
 	//d3.selectAll("path.gridbox").classed("hidden", false);
@@ -435,24 +436,33 @@ function showAll() {
 	$("div.rollover").removeClass("selected");
 	resetMap();
 	updateCounts();
+    }, 0);
 }
 
 function filterObjects(field, thresh) {
-    all_circles.classed("filtered", function(d) { return (d[field] < thresh) });
-	updateCounts();
+    setTimeout( function() {
+            all_circles.classed("filtered", function(d) { return (d[field] < thresh) });
+	    updateCounts();
+    }, 0);
 }
 
 function filterByHour(shr, ehr) {
-    all_circles.classed("filtered", function(d) { return ((d['Forecast_Hour'] < shr) || (d['Forecast_Hour'] > ehr)) });
-    updateCounts();
+    setTimeout( function() {
+            all_circles.classed("filtered", function(d) { return ((d['Forecast_Hour'] < shr) || (d['Forecast_Hour'] > ehr)) });
+            updateCounts();
+    }, 0);
 }
 
 function changeColor(field) {
-	var color = d3.scale.category20b();
-	all_circles.style("fill", function(d) { return color(d[field]); });
+    setTimeout( function() {
+	    var color = d3.scale.category20b();
+	    all_circles.style("fill", function(d) { return color(d[field]); });
+    }, 0);
 }
-function resetColor() {
-	all_circles.style("fill", function(d){ if (d3.select(this).classed("scatter")) return "gray"; else return "black"; });
+function resetColor() {	
+    setTimeout( function() {
+	    all_circles.style("fill", function(d){ if (d3.select(this).classed("scatter")) return "gray"; else return "black"; });
+    }, 0);
 }
 
 // update available circles to be selected
