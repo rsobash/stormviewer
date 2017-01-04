@@ -19,7 +19,6 @@
 svg.mapsvg { 
 	margin-top: 0px;
 	float: left;
-	opacity: 0.5;
 }
 svg.histosvg { 
 	margin-left: 5px;
@@ -59,14 +58,12 @@ div#rolloverdiv {
 	margin: 5px auto 0px auto;
 	text-align: center;
 	width: 100%;
-	opacity: 0.4;
 }
 div#rolloverdiv-members {
 	clear: both;
 	float: left;
 	width: 65px;
 	padding-top: 60px;
-	opacity: 0.4;
 }
 
 div#rollovercenter {
@@ -119,8 +116,8 @@ div#maincontainer {
   	margin: 0 auto; 
 	padding: 0px;
 	text-align: left; /** to fix IE centering **/
+	opacity: 0.4;
 }
-
 .axis path,
 .axis line {
   fill: none;
