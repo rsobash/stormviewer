@@ -63,6 +63,7 @@
 <br/><input type="button" onClick="filterByHour(13,36)" value="Day 1" />
 <input type="button" onClick="filterByHour(37,48)" value="Day 2" />
 <input type="button" onClick="filterObjects('Duration', 6)" value="Tracks >= 6hr"/><br/><br/>
+
 <span style="font-weight: bold;">Color Filters</span><br/>
 <input type="button" onClick="resetColor()" value="Reset" />
 <input type="button" onClick="changeColor('Duration')" value="Duration" />
@@ -187,8 +188,7 @@ histosvg.append("g").attr("class", "y axis hidden").call(yAxis)
 histosvg.append("rect")
         .attr("width", histo_width)
         .attr("height", histo_height)
-        .attr("class", "overlay")
-        .on("mousemove", moveDotHisto);
+        .attr("class", "overlay");
 
 // make hexbin here...
 //var hexbin = d3_hexbin.hexbin()
@@ -206,13 +206,8 @@ svg.append("rect")
     .attr("width", width)
     .attr("height", height)
     .attr("class", "overlay")
-    .on("mousemove", moveDot)
     .call(zoom);
 
-// update active circles and show/hide dots if mouse is within main svg area
-d3.select("div#svgcontainer")
-	.on("mouseover", function() { selectActiveCircles(); })
-	//.on("mouseout", function() { hover.classed("hidden", true); hoverdot.classed("hidden", true); })    
     
 var count_by_fhr = Array(49);
 var count_by_mem = Array(10);
@@ -242,9 +237,11 @@ d3.json("us.json", function(error, us) {
       .attr("class", "state-boundary")
       .attr("d", path);
 
-  var files_loaded = 0;
+  var files_loaded = 0,
+      files_missing = 0;
   for (var mem=1; mem<=10; mem++) {
     d3.csv("./data/track_step_NCAR_mem"+mem+"_20160509.csv", function(error, data) {
+      if (!error) {
  
       var member = data[0]['Step_ID'].split('_')[0].substring(3);
       files_loaded += 1;
@@ -293,6 +290,14 @@ d3.json("us.json", function(error, us) {
                
        // execute this code when all the files have loaded
        if (files_loaded == 10) whenloaded();       
+
+     } // end if error
+     else {
+         files_loaded += 1;
+         files_missing += 1;
+         // if all ten members are missing (no storms), go to allMissing function
+         if (files_missing == 10) allMissing();
+     }
      });
   }
 });
@@ -381,7 +386,26 @@ function whenloaded() {
 		 			.attr("y", -5)
 		 			.text(num_objects+" objects");
 
+	// update active circles and show/hide dots if mouse is within main svg area
+	d3.select("div#svgcontainer")
+		.on("mouseover", function() { selectActiveCircles(); })
+		//.on("mouseout", function() { hover.classed("hidden", true); hoverdot.classed("hidden", true); })    
 	selectActiveCircles();
+
+        // add mouse move functions if files loaded
+	histosvg.on("mousemove", moveDotHisto);
+        svg.on("mousemove", moveDot)
+}
+
+function allMissing() {
+       d3.select("div#maincontainer").transition().duration(500).style("opacity", "1.0")
+                .each("start", function() {
+                        dotbox.select("text").classed("hidden", true); 
+                        dotbox.select("text.loadingBar").classed("hidden", true); 
+                        histosvg.selectAll(".axis").classed("hidden", false);
+                        histosvg.selectAll(".axis text").classed("hidden", false);
+                        dotbox.append("text").attr("x", 250).attr("y", 75).text('No storm objects for this forecast').style('font-size', '30px');
+       });
 }
 
 function plotGrid() {
@@ -486,10 +510,16 @@ function updateCounts() {
 	textbox.text(num_objects+" objects");
 	
 	// reset color of rollovers
-	var colormem = d3.scale.linear().domain(d3.extent(count_by_mem)).range(["white", "#A67B5B"]);
-    var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["white", "#A67B5B"]);
-    for (var f=0; f<49; f++) $("div.rollover#"+f).css("background-color", colorfhr(count_by_fhr[f]));
-	for (var f=1; f<11; f++) $("div.rollover#m"+f).css("background-color", colormem(count_by_mem[f-1]));
+	var colormem = d3.scale.linear().domain(d3.extent(count_by_mem)).range(["#ede4de", "#A67B5B"]);
+        var colorfhr = d3.scale.linear().domain(d3.extent(count_by_fhr)).range(["#ede4de", "#A67B5B"]);
+        for (var f=0; f<49; f++) { 
+            if (count_by_fhr[f] < 1) $("div.rollover#"+f).css("background-color", "white");
+            else $("div.rollover#"+f).css("background-color", colorfhr(count_by_fhr[f]));
+        }
+	for (var f=1; f<11; f++) {
+            if (count_by_mem[f-1] < 1) $("div.rollover#m"+f).css("background-color", "white");
+            else $("div.rollover#m"+f).css("background-color", colormem(count_by_mem[f-1]));
+	}
 }
 
 function moveDotHisto() {
@@ -588,7 +618,7 @@ function changeHistoField(new_field) {
 d3.select(self.frameElement).style("height", height + "px");
 </script>
 
-<div style="clear:both;font-size:12px; color: #AFAFAF;padding:10px 0px 0px 65px;">Storms identified using column graupel > 0.25 in. --- Experimental interface, design subject to change</div>
+<div style="clear:both;font-size:12px; color: #AFAFAF;padding:10px 0px 0px 65px;">Storms identified using column graupel > 0.25 in. --- Dot size by UH2-5 magnitudes --- Experimental interface, design subject to change</div>
 </div>
 
 </body>
