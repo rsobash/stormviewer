@@ -54,7 +54,7 @@ body {
 }
 
 div#rolloverdiv {
-    padding: 0px 0px 5px 0px;
+        padding: 0px 0px 5px 0px;
 	margin: 5px auto 0px auto;
 	text-align: center;
 	width: 100%;
@@ -63,7 +63,7 @@ div#rolloverdiv-members {
 	clear: both;
 	float: left;
 	width: 65px;
-	padding-top: 60px;
+	padding-top: 50px;
 }
 
 div#rollovercenter {
@@ -112,10 +112,12 @@ div.rollover.selected.member {
 	border-right: 2px solid #000;
 }
 div#maincontainer {
-	width: 1350px; 
+	width: 1250px; 
   	margin: 0 auto; 
 	padding: 0px;
 	text-align: left; /** to fix IE centering **/
+}
+div#bodycontainer {
 	opacity: 0.4;
 }
 .axis path,
