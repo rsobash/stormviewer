@@ -278,7 +278,7 @@ d3.json("us.json", function(error, us) {
           .data(data).enter()
           .append("circle")
           .attr("id", function(d,i) { return "dot"+member+"-"+i; })
-          .attr("class", function(d) { return "circle mem"+member+" fhr"+parseInt(d['Forecast_Hour'],10); })
+          .attr("class", function(d) { return "circle mem"+member+" fhr"+parseInt(d['Forecast_Hour'],10)+" map"; })
           .attr("cx", function(d) { return projection([d.Centroid_Lon, d.Centroid_Lat])[0] }) 
           .attr("cy", function(d) { return projection([d.Centroid_Lon, d.Centroid_Lat])[1] }) 
           .attr("r", function(d) {
@@ -491,6 +491,7 @@ function changeColor(field) {
 function resetColor() {	
     setTimeout( function() {
 	    all_circles.style("fill", function(d){ if (d3.select(this).classed("scatter")) return "gray"; else return "black"; });
+	    all_circles.style("stroke", null).style("stroke-width", null);
     }, 0);
 }
 
@@ -498,7 +499,10 @@ function resetColor() {
 // used to only search among subset of visible dots on map/scatterplot in moveDot() and moveDotHisto()
 // much faster than searching through all dots (and having to get their class to determine if they are visible)
 function selectActiveCircles() {
-	active_circles = all_circles.filter(function() { return (!d3.select(this).classed("filtered") && !d3.select(this).classed("hidden")); });
+	active_circles = all_circles.filter(function() { return (!d3.select(this).classed("filtered") && !d3.select(this).classed("hidden") ); });
+	
+	active_circles_map     = active_circles.filter(function() { return d3.select(this).classed("map"); });
+	active_circles_scatter = active_circles.filter(function() { return d3.select(this).classed("scatter"); });
 }
 
 function updateCounts() {
@@ -539,7 +543,7 @@ function moveDotHisto() {
         xdiff   = 0,
         ydiff   = 0;
         
-	active_circles.each(function(d) {
+	active_circles_scatter.each(function(d) {
             var xydot = [x(d[scatterx.field]), y(d[scattery.field])];
             var xdiff = Math.abs(xydot[0] - mousecoords[0]);
             var ydiff = Math.abs(xydot[1] - mousecoords[1]);
@@ -568,6 +572,12 @@ function moveDotHisto() {
     }
 }
 
+d3.selection.prototype.moveToFront = function() {  
+      return this.each(function(){
+        this.parentNode.appendChild(this);
+      });
+};
+
 function moveDot() {
     var mousecoords = d3.mouse(dotbox.node());
     var mindiff = 1000,
@@ -575,7 +585,7 @@ function moveDot() {
         xdiff   = 0,
         ydiff   = 0;
     
-    active_circles.each(function(d) {
+    active_circles_map.each(function(d) {
             var xydot = projection([d['Centroid_Lon'], d['Centroid_Lat']]);
             var xdiff = Math.abs(xydot[0] - mousecoords[0]);
             var ydiff = Math.abs(xydot[1] - mousecoords[1]);
@@ -588,12 +598,24 @@ function moveDot() {
         hoverdot.classed("hidden", false);
     	hover.attr("transform", "translate(" + coord + ")");
     	
-    	d3.select(closestdot).each(function(d) { 
-    		hoverdot.attr("transform", "translate(" + x(d[scatterx.field]) +","+ y(d[scattery.field]) + ")") 
+    	var dotselection = d3.select(closestdot);
+    	dotselection.each(function(d) { 
+    		hoverdot.attr("transform", "translate(" + x(d[scatterx.field]) +","+ y(d[scattery.field]) + ")")
     	});
     	
-    	var thisfhr = d3.select(closestdot).attr("class").split(" ")[2].substring(3);
-    	var thismem = d3.select(closestdot).attr("class").split(" ")[1].substring(3);
+    	// change color and move element to front
+    	paint = false;
+    	if (paint) {
+    		dotselection.style("fill", "brown");
+    		dotselection.moveToFront();
+    		var thisid = dotselection.attr("id");
+    		var scatterdot = active_circles_scatter.select(function(d,i) { return (this.id == thisid) ? this : null });
+    		scatterdot.style("fill", "brown").style("stroke", "white").style("stroke-width", "1.5px").attr("r", 5)
+    		scatterdot.moveToFront();
+    	}
+    	
+    	var thisfhr = dotselection.attr("class").split(" ")[2].substring(3);
+    	var thismem = dotselection.attr("class").split(" ")[1].substring(3);
 		$("div.rollover").removeClass("selected");
 		$("div#"+thisfhr+".rollover").addClass("selected");
         $("div#m"+thismem+".rollover").addClass("selected");
