@@ -143,12 +143,12 @@ var all_fields = { 'SBCAPE':    { 'field':'CAPE_SFC-potential_mean', 'label':'SB
 				   'LCL':      { 'field':'LCL_HEIGHT-potential_mean', 'label':'SBLCL Height (m)', 'domain':[0,4000] },
 				   'SRH1':      { 'field':'SRH1-potential_mean', 'label':'0 - 1km SRH (m2/s2)', 'domain':[0,600] },
 				   'SRH3':      { 'field':'SRH3-potential_mean', 'label':'0 - 3km SRH (m2/s2)', 'domain':[0,600] },
-				   'FHR':      { 'field':'Forecast_Hour', 'label':'Forecast Hour', 'domain':[0,48] },
+				   'FHR':      { 'field':'Forecast_Hour', 'label':'Forecast Hour', 'domain':[0,49] },
 				   'MEM':      { 'field':'Member', 'label':'Member', 'domain':[1,10] },
 				 }
 
-var scatterx = all_fields['UH25'];
-var scattery = all_fields['GRPL'];
+var scatterx = all_fields['FHR'];
+var scattery = all_fields['UH25'];
 
 var x = d3.scale.linear().range([0, histo_width]);
 var y = d3.scale.linear().range([histo_height, 0]);
@@ -332,6 +332,7 @@ function whenloaded() {
         $("div.rollover.fhr").mouseover(function() {
             var fhr = d3.select(this).attr("id");
             d3.selectAll("div.rollover").classed("selected", false);
+            //d3.selectAll("div.rollover").classed("faded", true);
             $("div#"+fhr+".rollover").addClass("selected");
 
             all_circles.classed("hidden", true);
@@ -618,6 +619,7 @@ function moveDot() {
     	var thismem = dotselection.attr("class").split(" ")[1].substring(3);
 		$("div.rollover").removeClass("selected");
 		$("div#"+thisfhr+".rollover").addClass("selected");
+        
         $("div#m"+thismem+".rollover").addClass("selected");
         
     } else {
