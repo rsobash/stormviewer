@@ -54,7 +54,7 @@ body {
 }
 
 div#rolloverdiv {
-        padding: 0px 0px 5px 0px;
+        padding: 10px 0px 5px 0px;
 	margin: 5px auto 0px auto;
 	text-align: center;
 	width: 100%;
@@ -73,8 +73,8 @@ div#rollovercenter {
 }
 
 div.rollover {
-	border-top: 2px solid #EFEFEF;
-	border-bottom: 2px solid #EFEFEF;
+	border-top: 2px solid #FFF;
+	border-bottom: 2px solid #FFF;
 	width: 15px;
 	text-align: center;
 	font-size: 12px;
@@ -98,6 +98,9 @@ div.rollover.member {
 	border-right: 2px solid #EFEFEF;
 	border-top: 0px;
 	border-bottom: 0px;
+}
+div.rollover.faded {
+        opacity: 0.5;
 }
 div.rollover.selected {
 	border-top: 2px solid #000; 
